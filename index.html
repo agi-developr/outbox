@@ -158,9 +158,8 @@ textarea.dEdit:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(124,140,2
 .dActs{display:flex;gap:9px;margin-top:18px}
 
 /* ---------- FOOTER PITCH ---------- */
-.pitch{margin-top:56px;padding-top:30px;border-top:1px solid var(--line);display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:34px}
-@media(max-width:900px){.pitch{grid-template-columns:1fr}}
-.pitch h3{font-family:'Instrument Serif',serif;font-size:24px;font-weight:400;margin-bottom:11px;letter-spacing:-.01em}
+.pitch{margin-top:64px;padding-top:44px;border-top:1px solid var(--line);text-align:center}
+.pitch h3{font-family:'Instrument Serif',serif;font-size:38px;font-weight:400;line-height:1.35;letter-spacing:-.015em;color:var(--dim)}
 .pitch p{font-size:13px;color:var(--dim);line-height:1.75}
 .pitch p+p{margin-top:11px}
 .pitch em{color:var(--txt);font-style:normal}
@@ -194,6 +193,60 @@ textarea.dEdit:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(124,140,2
 .thSteps span:last-child{color:var(--acc);border-color:rgba(124,140,255,.4)}
 .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--card2);border:1px solid var(--line2);border-radius:12px;padding:12px 18px;font-size:12.5px;z-index:90;display:flex;align-items:center;gap:9px;box-shadow:0 16px 50px rgba(0,0,0,.6);transition:transform .34s cubic-bezier(.22,1,.36,1)}
 .toast.up{transform:translateX(-50%) translateY(0)}
+
+/* ================= CLOUDY LIGHT SKIN ================= */
+:root{
+  --bg:#F7F6FB; --bg2:#FFFFFF; --card:#FFFFFF; --card2:#FBFAFE;
+  --line:#EBE8F4; --line2:#DCD7ED;
+  --txt:#16131F; --dim:#6C6683; --dim2:#9C96AF;
+  --acc:#6D5CE7; --acc2:#C86DD7;
+  --ok:#12B981; --warn:#F0A020; --hot:#F0567A; --wait:#3EA8F5;
+}
+body{background:var(--bg)}
+body::before{
+  background:
+    radial-gradient(760px 520px at 8% -10%, rgba(200,109,215,.30), transparent 62%),
+    radial-gradient(700px 480px at 42% -14%, rgba(109,92,231,.24), transparent 62%),
+    radial-gradient(820px 540px at 92% 2%, rgba(62,168,245,.26), transparent 62%),
+    radial-gradient(700px 620px at 68% 108%, rgba(255,183,143,.26), transparent 62%),
+    radial-gradient(620px 560px at 14% 96%, rgba(18,185,129,.16), transparent 62%);
+  filter:blur(6px);
+}
+.boot{background:var(--bg)}
+.bootLog{color:var(--dim)}
+.bootLog i{color:var(--ok)}
+.bootBar{background:var(--line)}
+.av{color:#fff}
+.stats{background:rgba(255,255,255,.72);backdrop-filter:blur(16px);box-shadow:0 6px 26px rgba(88,70,150,.07)}
+.pill,.liveBtn{background:rgba(255,255,255,.74);backdrop-filter:blur(14px)}
+.lane{
+  background:rgba(255,255,255,.5); backdrop-filter:blur(18px);
+  border-color:rgba(255,255,255,.9);
+  box-shadow:0 10px 40px rgba(88,70,150,.06);
+}
+.lane:hover{border-color:#fff}
+.laneC{background:rgba(255,255,255,.8)}
+.card{box-shadow:0 3px 14px rgba(88,70,150,.06)}
+.card:hover{box-shadow:0 12px 34px rgba(88,70,150,.13)}
+.cAv,.dAv,.thAv{color:#fff}
+.why,.gc{background:#F8F7FC}
+.draft{background:rgba(109,92,231,.05);border-color:rgba(109,92,231,.18)}
+.draftTx{color:#3A3450}
+.btn{background:#fff;border-color:var(--line2)}
+.btn:hover{background:#F8F7FC;border-color:#C9C1E4}
+.btn.pri{color:#fff;box-shadow:0 4px 16px rgba(109,92,231,.32)}
+.qr input,.compose input,textarea.dEdit{background:#fff}
+.send svg{stroke:#fff}
+.logRow:hover{background:#fff}
+.logTx b{color:#332C47}
+.scrim{background:rgba(40,32,64,.34)}
+.drawer{background:var(--bg);box-shadow:-24px 0 70px rgba(88,70,150,.14)}
+.dBody{color:#453E5C}
+.reason{background:#fff}
+.thinking{background:linear-gradient(100deg,rgba(109,92,231,.09),rgba(200,109,215,.07));border-color:rgba(109,92,231,.22);box-shadow:0 8px 30px rgba(88,70,150,.09)}
+.thSteps span{background:rgba(255,255,255,.86)}
+.toast{background:#fff;box-shadow:0 14px 44px rgba(88,70,150,.2)}
+.pitch p{color:var(--dim)}
 </style>
 </head>
 <body>
@@ -212,57 +265,57 @@ const av  = s => `hsl(${hue(s)} 62% 68%)`;
 const ini = s => s.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
 
 const LANES = [
-  {id:'you',   t:'Needs you',    c:'var(--hot)',  sub:'A real decision. The agent will not guess.'},
-  {id:'ready', t:'Reply ready',  c:'var(--acc)',  sub:'Written in your voice. Read it, tap send.'},
-  {id:'wait',  t:'Chasing for you', c:'var(--wait)', sub:'Sent. It remembers, re-angles, and stops when told.'},
-  {id:'done',  t:'Handled',      c:'var(--ok)',   sub:'Done while you slept. Nothing needed.'},
+  {id:'you',   t:'Needs you',    c:'var(--hot)',  sub:'It will not guess.'},
+  {id:'ready', t:'Reply ready',  c:'var(--acc)',  sub:'Written. Tap send.'},
+  {id:'wait',  t:'Chasing for you', c:'var(--wait)', sub:'It remembers. You don\'t have to.'},
+  {id:'done',  t:'Handled',      c:'var(--ok)',   sub:'Nothing needed.'},
 ];
 
 const MAIL = [
   { id:1, lane:'you', from:'Priya Raghavan', org:'Sequoia Capital', time:'7:12am',
     sub:'Partner meeting — Tuesday or Thursday?',
-    sum:'She can do <b>Tue 2pm</b> or <b>Thu 10am</b>. Both are open on your calendar. Thursday collides with your Motel4 pilot call, which you flagged as immovable.',
-    why:'Only you can trade a pilot call for a partner meeting.',
+    sum:'<b>Tue 2pm</b> or <b>Thu 10am</b>. Thursday hits your pilot call.',
+    why:'Your call, not mine.',
     body:`Ilia,\n\nGreat call last week. I'd like to bring you in front of the full partnership.\n\nWe have Tuesday 2pm or Thursday 10am. Either works on our side — whichever is easier for you.\n\nCome ready to walk through the hotel pilot numbers.\n\nBest,\nPriya`,
     reason:'Both slots are free, so this is not a scheduling problem — it is a priority call. Thursday overlaps the Sunset Inn pilot, which you marked <b>do not move</b> on Aug 24. I will not silently reschedule revenue.',
     draft:'Tuesday 2pm works — I\'ll come with the pilot numbers and the call recordings. Looking forward to it.'},
 
   { id:2, lane:'you', from:'Marcus Bell', org:'Sunset Inn — 32 rooms', time:'6:48am',
     sub:'We want to go live, but on a discount',
-    sum:'Ready to sign. Asking <b>$180/mo instead of $299</b>, citing budget. This is your third pilot asking for the same cut.',
-    why:'Pricing is yours. The agent flagged the pattern, not the answer.',
+    sum:'Wants <b>$180</b>, not $299. Third pilot to ask.',
+    why:'Pricing is yours.',
     body:`Hi Ilia,\n\nThe team loved the two-week trial — we caught 41 calls we would have missed.\n\nOne thing: $299 is above what we budgeted. Could you do $180/month? If so I can sign today.\n\nMarcus`,
     reason:'Third pilot in nine days anchoring at the same number. That is a <b>price signal, not a negotiation</b>. Deciding this once sets your floor, so I am not drafting a yes or a no.',
     draft:'41 missed calls in two weeks is roughly $8k of bookings. Let\'s hold $299 and I\'ll add the after-hours routing at no charge.'},
 
   { id:3, lane:'ready', from:'Elijah-Justin Leano', org:'IxDF San Francisco', time:'5:23pm',
     sub:'Venue address correction — 530 Howard St',
-    sum:'Address typo fixed: <b>530 Howard St, Suite 300</b>. Doors at 5:30. You are on the builder list.',
-    why:'Confirmation only. Nothing at stake.',
+    sum:'New address: <b>530 Howard St, Suite 300</b>. Doors 5:30.',
+    why:'Nothing at stake.',
     body:`Sorry there was also a typo on the address. Here is the actual address:\n\n📍 Venue: 530 Howard St, Suite 300\n\nDoors open at 5:30pm. If the gate is locked, message me.`,
     reason:'Logistics acknowledgement. No commitment, no money, no new obligation — safe to answer in your voice.',
     draft:'Got it — 530 Howard, Suite 300. See you at 5:30.'},
 
   { id:4, lane:'ready', from:'Dana Whitfield', org:'Harborview Suites', time:'Yesterday',
     sub:'Can it answer in Spanish?',
-    sum:'Pre-sale question about Spanish support. <b>You shipped it on Aug 19</b> — the agent pulled the answer from your own changelog.',
-    why:'Answer already exists in your docs.',
+    sum:'Asks about Spanish. <b>You shipped it Aug 19</b>.',
+    why:'Already in your docs.',
     body:`Hi — about half our callers speak Spanish first. Does your receptionist handle that, or does it hand off?`,
     reason:'I checked your changelog rather than guessing. Spanish shipped <b>Aug 19</b> with automatic language detection on the first sentence, so the answer is a fact I can cite, not a promise I invented.',
     draft:'Yes — it detects the caller\'s language in the first sentence and answers in Spanish natively, no handoff. Happy to run a live test call on your line this week.'},
 
   { id:5, lane:'ready', from:'Tomás Herrera', org:'Cedar Motor Lodge', time:'Yesterday',
     sub:'Invoice #1043 — wrong billing address',
-    sum:'Billing address on the invoice is stale. Correct one is <b>already in your CRM</b>. The agent drafted the fix and the reissue.',
-    why:'Mechanical correction, verified against your CRM.',
+    sum:'Stale billing address. Correct one is <b>in your CRM</b>.',
+    why:'Verified against your CRM.',
     body:`The invoice has our old address on it. Can you reissue with 1120 Cedar Ave, Bakersfield CA 93301?`,
     reason:'The address he gave matches the record updated in your CRM on Aug 11, so the two sources agree. Reissuing an invoice is reversible, which is why this sits in Reply ready and not in Needs you.',
     draft:'Fixed — reissuing #1043 to 1120 Cedar Ave, Bakersfield CA 93301. New copy is on its way now.'},
 
   { id:8, lane:'you', kind:'event', from:'AI Tinkerers SF', org:'Invite · Thu 6pm · SoMa', time:'9:04am',
     sub:'Agentic Infra Night — 180 builders',
-    sum:'<b>What you\'d gain:</b> 4 hotel-tech founders on the guest list and two Twilio voice engineers. <b>What it costs:</b> Thu 6–9pm, which is your only free evening this week.',
-    why:'Calendar tradeoff. Two taps, no typing.',
+    sum:'<b>Thu 6–9pm.</b> Worth it or not:',
+    why:'Two taps, no typing.',
     gain:['4 hotel-tech founders on the public guest list','2 Twilio voice engineers — your open SIP ticket','Cepien AI is demoing; adjacent to your triage stack'],
     cost:['Thu 6–9pm is your only free evening this week','45 min each way from your place'],
     body:`You're invited to Agentic Infra Night — 180 builders, lightning demos, open bar.\nThursday 6pm, SoMa.`,
@@ -271,32 +324,32 @@ const MAIL = [
 
   { id:9, lane:'wait', kind:'chase', from:'Nadia Fontaine', org:'CEO · Meridian Hotels', time:'attempt 2 of 4',
     sub:'AI GTM freelance pitch — no reply yet',
-    sum:'You pitched Aug 21. Opened <b>3 times</b>, never replied. Next nudge <b>Tue 9am</b> with a new angle: their Glassdoor complaints about missed reservation calls.',
-    why:'You are forgetful. The agent is not.',
+    sum:'Opened <b>3×</b>, no reply. Next nudge <b>Tue 9am</b>, new angle.',
+    why:'It remembers so you don\'t.',
     body:`Your pitch, sent Aug 21:\n\n"Nadia — I build AI phone receptionists for hotels. Meridian's 6 properties are losing after-hours bookings. Worth 15 minutes?"`,
     reason:'Three opens and no reply means the message landed but the hook did not. Sending the same note again wastes the thread, so attempt 2 leads with <b>their own Glassdoor reviews</b> naming missed reservation calls. Four attempts, then I stop and tell you.',
     draft:'Nadia — following up with something concrete. Three of Meridian\'s recent Glassdoor reviews mention calls going unanswered at the front desk. That\'s the exact gap I close. 15 minutes this week?'},
 
   { id:10, lane:'wait', kind:'chase', from:'Oscar Bramley', org:'CEO · Lantern Stay Group', time:'attempt 1 of 4',
     sub:'AI GTM freelance pitch — no reply yet',
-    sum:'You pitched Aug 25. <b>Not opened.</b> Agent will resend from a different subject line Wed 8am before trying a new angle.',
-    why:'Unopened is a subject-line problem, not a pitch problem.',
+    sum:'<b>Never opened.</b> New subject line Wed 8am.',
+    why:'Subject-line problem.',
     body:`Your pitch, sent Aug 25:\n\n"Oscar — quick note about after-hours booking capture across the Lantern properties."`,
     reason:'Zero opens after four days means it never got read, so changing the argument would be solving the wrong problem. Attempt 2 changes <b>only the subject line</b> and keeps the body, which isolates the variable.',
     draft:'Oscar — resending with a clearer subject. After-hours calls at Lantern are going to voicemail; I close that gap for hotel groups your size. Worth 15 minutes?'},
 
   { id:6, lane:'wait', from:'Rachel Kim', org:'Y Combinator', time:'2d ago',
     sub:'S26 application — interview scheduling',
-    sum:'You replied Tuesday with availability. <b>No response in 48h.</b> Agent will nudge Friday 9am unless you stop it.',
-    why:'Follow-up armed, not yet fired.',
+    sum:'<b>No reply in 48h.</b> Nudge armed for Friday 9am.',
+    why:'Armed, not fired.',
     body:`Thanks for applying. We're scheduling interviews for the week of the 8th — send over a few windows.`,
     reason:'You answered on Aug 26 and nothing came back. Standard YC turnaround is 2–4 days, so a nudge before Friday reads as anxious rather than diligent. I am holding it.',
     draft:'Following up on the windows I sent Tuesday — still open on all three. Happy to work around your side.'},
 
   { id:7, lane:'wait', from:'Sam Ortega', org:'Twilio Support', time:'3d ago',
     sub:'Ticket #88214 — SIP trunk latency',
-    sum:'Escalated to tier 2. Their <b>SLA expires tomorrow 4pm</b>. Agent is holding the clock and will chase automatically.',
-    why:'Vendor clock tracked to the minute.',
+    sum:'Their <b>SLA expires 4pm tomorrow</b>. Clock is held.',
+    why:'Clock tracked.',
     body:`Your ticket has been escalated to our voice engineering team. Expect an update within 72 hours.`,
     reason:'I read the 72-hour window off their own reply and put it on a timer. If nothing lands by <b>4pm tomorrow</b> I chase, and the chase quotes their SLA back at them.',
     draft:'Checking in on #88214 — the 72-hour window from your escalation note closes at 4pm today. What\'s the current status?'},
@@ -322,7 +375,7 @@ const INCOMING = [
   { id:101, lane:'ready', from:'Grace Nakamura', org:'Bayside Lodge', time:'just now',
     sub:'Do you integrate with Cloudbeds?',
     sum:'Pre-sale integration question. <b>Cloudbeds shipped Aug 6</b> — pulled from your own integrations page.',
-    why:'Answer already exists in your docs.',
+    why:'Already in your docs.',
     body:`Hi — we run Cloudbeds for our PMS. Does your receptionist push bookings into it directly?`,
     reason:'Checked your integrations page rather than guessing. Cloudbeds went live <b>Aug 6</b> with two-way booking sync, so this is a citable fact, not a promise.',
     draft:'Yes — two-way sync with Cloudbeds since Aug 6, bookings land directly in your PMS. Want me to run a test booking on your account?'},
@@ -346,12 +399,9 @@ const RETONE = {
 /* ================= BOOT ================= */
 function Boot(){
   const lines=[
-    'connecting <b>agentmail</b> inbox … <i>ok</i>',
-    'reading <b>47</b> messages since 11:04pm',
-    'resolving threads against calendar + CRM',
-    'scoring each against your <b>TELOS</b> …',
-    '<i>41 handled</i> · 4 drafted · 2 need you',
-    'nothing was deleted. nothing was sent.',
+    'reading <b>47</b> messages',
+    'checking your calendar and CRM',
+    '<i>41 handled</i> · 4 drafted · 2 for you',
   ];
   return (
     <div className="boot" id="boot">
@@ -434,7 +484,7 @@ function Card({m,i,onOpen,onSend}){
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0a0b12" strokeWidth="2.4" strokeLinecap="round"><path d="M5 12h13M12 5l7 7-7 7"/></svg>
             </button>
           </div>
-          <div className="hint">Type the decision, not the email. It writes the rest. <kbd>↵</kbd></div>
+          <div className="hint">Type the decision, not the email.</div>
         </>
       )}
 
@@ -526,8 +576,7 @@ function App(){
 
       <div className="brief">
         <div className="briefLine">
-          I read <b>47</b> messages while you slept.<br/>
-          <span>Forty-one are done. Four have replies waiting. Two are yours.</span>
+          <b>41</b> done. <b>4</b> written. <span>Two need you.</span>
         </div>
         <div className="stats">
           <div className="stat"><div className="statN">{read}</div><div className="statL">Read</div></div>
@@ -570,7 +619,7 @@ function App(){
                   <div className="composeL">＋ new follow-up</div>
                   <input placeholder="oscar@lanternstay.com — pitch AI GTM, chase 4x"
                     onKeyDown={e=>{if(e.key==='Enter'&&e.target.value.trim()){setToast('Follow-up armed — 4 attempts, new angle each time, then it stops and tells you');setTimeout(()=>setToast(null),4200);e.target.value=''}}}/>
-                  <div className="composeH">Type the address and the goal. It writes attempt one, schedules the rest, and changes the angle each time.</div>
+                  <div className="composeH">Address plus goal. It handles the rest.</div>
                 </div>
               )}
               {l.id==='done'
@@ -588,24 +637,7 @@ function App(){
       </div>
 
       <div className="pitch">
-        <div>
-          <div className="kicker">The idea</div>
-          <h3>Every email client still makes you read.</h3>
-          <p>Inbox zero, snooze, split panes, kanban lanes bolted onto Gmail — all of it is <em>faster sorting of a list you still have to read</em>. The list is the problem.</p>
-          <p>Outbox deletes the list. An agent reads everything, does what is safe, drafts what is obvious, and hands you only the calls that are genuinely yours. You never see an inbox. You only ever see what is about to go out.</p>
-        </div>
-        <div>
-          <div className="kicker">The rule</div>
-          <h3>It never guesses on your behalf.</h3>
-          <p>Anything that spends money, moves a commitment, or changes a price goes to <em>Needs you</em> — with the tradeoff spelled out and no draft written.</p>
-          <p>Every card shows why it landed where it did. Open one and you get the agent's reasoning, cited against your calendar, your CRM, your changelog. Wrong lane is a bug you can see.</p>
-        </div>
-        <div>
-          <div className="kicker">The interaction</div>
-          <h3>Type the decision, not the email.</h3>
-          <p>“Tuesday, and hold the price.” That is the whole input. The agent writes the sentences, matches your voice, and sends.</p>
-          <p>Four lanes, one gesture each: <em>send</em>, <em>decide</em>, <em>wait</em>, <em>ignore</em>. Everything else the mailbox used to ask of you is gone.</p>
-        </div>
+        <h3>Every email app still makes you read.<br/>This one just asks you to decide.</h3>
       </div>
     </div>
 
