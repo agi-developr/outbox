@@ -272,7 +272,7 @@ function App(){
           <div className="ivGo"><button className="b g">Hang up</button></div>
         </div>
         <div className="ivBody">
-          {said.map((s,k)=>(<div key={k}>
+          {said.map((s,k)=>(<div key={k} style={{display:"flex",flexDirection:"column"}}>
             <div className="qa">{s.q}</div>
             <div className="qy" style={{marginTop:7}}>{s.you}</div>
             <div className="qr" style={{marginTop:6}}>✓ {s.r}</div>
