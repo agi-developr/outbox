@@ -166,6 +166,18 @@ textarea.dEdit:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(124,140,2
 .pitch em{color:var(--txt);font-style:normal}
 .kicker{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--acc);font-weight:600;margin-bottom:9px}
 
+/* gain vs cost */
+.gc{background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:11px;padding:9px 11px;margin:2px 0 10px}
+.gcR{display:flex;gap:8px;font-size:11.5px;line-height:1.55;color:var(--dim);padding:2px 0}
+.gcP{color:var(--ok);font-weight:700;flex:none;width:9px}
+.gcM{color:var(--warn);font-weight:700;flex:none;width:9px}
+/* new follow-up composer */
+.compose{background:rgba(94,184,255,.05);border:1px dashed rgba(94,184,255,.35);border-radius:12px;padding:11px;margin-bottom:11px}
+.composeL{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--wait);font-weight:600;margin-bottom:7px}
+.compose input{width:100%;background:#0b0d11;border:1px solid var(--line);border-radius:9px;padding:9px 11px;color:var(--txt);font-size:12px;font-family:inherit;outline:none}
+.compose input:focus{border-color:var(--wait);box-shadow:0 0 0 3px rgba(94,184,255,.12)}
+.compose input::placeholder{color:var(--dim2)}
+.composeH{font-size:10px;color:var(--dim2);margin-top:6px;line-height:1.5}
 /* live delivery */
 .liveBtn{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line2);border-radius:999px;padding:8px 15px;font-size:12px;color:var(--txt);cursor:pointer;font-family:inherit;font-weight:500;transition:.18s}
 .liveBtn:hover:not(:disabled){border-color:var(--acc);background:var(--card2)}
@@ -202,7 +214,7 @@ const ini = s => s.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
 const LANES = [
   {id:'you',   t:'Needs you',    c:'var(--hot)',  sub:'A real decision. The agent will not guess.'},
   {id:'ready', t:'Reply ready',  c:'var(--acc)',  sub:'Written in your voice. Read it, tap send.'},
-  {id:'wait',  t:'Waiting on',   c:'var(--wait)', sub:'Sent. The agent is watching for the reply.'},
+  {id:'wait',  t:'Chasing for you', c:'var(--wait)', sub:'Sent. It remembers, re-angles, and stops when told.'},
   {id:'done',  t:'Handled',      c:'var(--ok)',   sub:'Done while you slept. Nothing needed.'},
 ];
 
@@ -246,6 +258,32 @@ const MAIL = [
     body:`The invoice has our old address on it. Can you reissue with 1120 Cedar Ave, Bakersfield CA 93301?`,
     reason:'The address he gave matches the record updated in your CRM on Aug 11, so the two sources agree. Reissuing an invoice is reversible, which is why this sits in Reply ready and not in Needs you.',
     draft:'Fixed — reissuing #1043 to 1120 Cedar Ave, Bakersfield CA 93301. New copy is on its way now.'},
+
+  { id:8, lane:'you', kind:'event', from:'AI Tinkerers SF', org:'Invite · Thu 6pm · SoMa', time:'9:04am',
+    sub:'Agentic Infra Night — 180 builders',
+    sum:'<b>What you\'d gain:</b> 4 hotel-tech founders on the guest list and two Twilio voice engineers. <b>What it costs:</b> Thu 6–9pm, which is your only free evening this week.',
+    why:'Calendar tradeoff. Two taps, no typing.',
+    gain:['4 hotel-tech founders on the public guest list','2 Twilio voice engineers — your open SIP ticket','Cepien AI is demoing; adjacent to your triage stack'],
+    cost:['Thu 6–9pm is your only free evening this week','45 min each way from your place'],
+    body:`You're invited to Agentic Infra Night — 180 builders, lightning demos, open bar.\nThursday 6pm, SoMa.`,
+    reason:'I read the public guest list and matched it against your CRM and your open vendor tickets. Three real reasons to go, two real reasons not to. <b>I will not put something on your calendar for you.</b>',
+    draft:''},
+
+  { id:9, lane:'wait', kind:'chase', from:'Nadia Fontaine', org:'CEO · Meridian Hotels', time:'attempt 2 of 4',
+    sub:'AI GTM freelance pitch — no reply yet',
+    sum:'You pitched Aug 21. Opened <b>3 times</b>, never replied. Next nudge <b>Tue 9am</b> with a new angle: their Glassdoor complaints about missed reservation calls.',
+    why:'You are forgetful. The agent is not.',
+    body:`Your pitch, sent Aug 21:\n\n"Nadia — I build AI phone receptionists for hotels. Meridian's 6 properties are losing after-hours bookings. Worth 15 minutes?"`,
+    reason:'Three opens and no reply means the message landed but the hook did not. Sending the same note again wastes the thread, so attempt 2 leads with <b>their own Glassdoor reviews</b> naming missed reservation calls. Four attempts, then I stop and tell you.',
+    draft:'Nadia — following up with something concrete. Three of Meridian\'s recent Glassdoor reviews mention calls going unanswered at the front desk. That\'s the exact gap I close. 15 minutes this week?'},
+
+  { id:10, lane:'wait', kind:'chase', from:'Oscar Bramley', org:'CEO · Lantern Stay Group', time:'attempt 1 of 4',
+    sub:'AI GTM freelance pitch — no reply yet',
+    sum:'You pitched Aug 25. <b>Not opened.</b> Agent will resend from a different subject line Wed 8am before trying a new angle.',
+    why:'Unopened is a subject-line problem, not a pitch problem.',
+    body:`Your pitch, sent Aug 25:\n\n"Oscar — quick note about after-hours booking capture across the Lantern properties."`,
+    reason:'Zero opens after four days means it never got read, so changing the argument would be solving the wrong problem. Attempt 2 changes <b>only the subject line</b> and keeps the body, which isolates the variable.',
+    draft:'Oscar — resending with a clearer subject. After-hours calls at Lantern are going to voicemail; I close that gap for hotel groups your size. Worth 15 minutes?'},
 
   { id:6, lane:'wait', from:'Rachel Kim', org:'Y Combinator', time:'2d ago',
     sub:'S26 application — interview scheduling',
@@ -367,7 +405,27 @@ function Card({m,i,onOpen,onSend}){
         </div>
       )}
 
-      {!sent && m.lane==='you' && (
+      {!sent && m.kind==='event' && (
+        <>
+          <div className="gc">
+            {m.gain.map((g,k)=><div className="gcR" key={k}><span className="gcP">+</span>{g}</div>)}
+            {m.cost.map((c,k)=><div className="gcR" key={k}><span className="gcM">−</span>{c}</div>)}
+          </div>
+          <div className="acts">
+            <button className="btn pri" onClick={()=>{setSent(true);onSend('cal',m.from)}}>Add to calendar</button>
+            <button className="btn" onClick={()=>{setSent(true);onSend('no',m.from)}}>Decline</button>
+          </div>
+        </>
+      )}
+
+      {!sent && m.kind==='chase' && (
+        <div className="acts">
+          <button className="btn pri" onClick={()=>fire()}>Approve next nudge</button>
+          <button className="btn" onClick={()=>onOpen(m)}>See the angle</button>
+        </div>
+      )}
+
+      {!sent && m.lane==='you' && !m.kind && (
         <>
           <div className="qr">
             <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Tell it what you decided…"
@@ -380,7 +438,7 @@ function Card({m,i,onOpen,onSend}){
         </>
       )}
 
-      {!sent && m.lane==='wait' && (
+      {!sent && m.lane==='wait' && !m.kind && (
         <div className="acts">
           <button className="btn" onClick={()=>fire()}>Nudge now</button>
           <button className="btn gh" onClick={()=>onOpen(m)}>Why</button>
@@ -507,6 +565,14 @@ function App(){
                 <div className="laneC">{l.id==='done'?HANDLED.length:items.length}</div>
               </div>
               <div className="laneSub">{l.sub}</div>
+              {l.id==='wait' && (
+                <div className="compose">
+                  <div className="composeL">＋ new follow-up</div>
+                  <input placeholder="oscar@lanternstay.com — pitch AI GTM, chase 4x"
+                    onKeyDown={e=>{if(e.key==='Enter'&&e.target.value.trim()){setToast('Follow-up armed — 4 attempts, new angle each time, then it stops and tells you');setTimeout(()=>setToast(null),4200);e.target.value=''}}}/>
+                  <div className="composeH">Type the address and the goal. It writes attempt one, schedules the rest, and changes the angle each time.</div>
+                </div>
+              )}
               {l.id==='done'
                 ? HANDLED.map((h,i)=>(
                     <div className="logRow" key={i} style={{animationDelay:(i*.045)+'s'}}>
