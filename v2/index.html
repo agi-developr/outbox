@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Loop — it holds your loops</title>
+<meta name="description" content="Not an inbox. Every open loop you have with another person, in one place." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F7F6FB; --card:#FFF;
+  --line:#EDEAF6; --line2:#DFDAEE;
+  --txt:#17141F; --dim:#6B6584; --dim2:#A29CB4;
+  --acc:#6D5CE7; --acc2:#C86DD7; --ok:#11B981; --hot:#F0567A;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,-apple-system,system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;filter:blur(8px);
+  background:
+    radial-gradient(760px 520px at 5% -12%, rgba(200,109,215,.28), transparent 62%),
+    radial-gradient(700px 480px at 42% -16%, rgba(109,92,231,.22), transparent 62%),
+    radial-gradient(820px 540px at 97% 0%, rgba(62,168,245,.24), transparent 62%),
+    radial-gradient(720px 620px at 72% 112%, rgba(255,183,143,.22), transparent 62%);}
+#root{position:relative;z-index:1}
+
+.wrap{max-width:1180px;margin:0 auto;padding:38px 30px 90px}
+.top{display:flex;align-items:center;gap:18px;margin-bottom:38px}
+.mark{font-family:'Instrument Serif',serif;font-size:27px;letter-spacing:-.01em}
+.mark em{font-style:italic;background:linear-gradient(100deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{font-size:13px;color:var(--dim2)}
+.mic{margin-left:auto;display:inline-flex;align-items:center;gap:10px;border:0;cursor:pointer;
+  background:linear-gradient(100deg,var(--acc),var(--acc2));color:#fff;font-family:inherit;font-size:14px;font-weight:500;
+  padding:12px 20px;border-radius:999px;box-shadow:0 8px 26px rgba(109,92,231,.32);transition:transform .2s}
+.mic:hover{transform:translateY(-2px)}
+.mic.on{animation:br 1.4s ease-in-out infinite}
+@keyframes br{50%{box-shadow:0 8px 26px rgba(109,92,231,.32),0 0 0 16px rgba(109,92,231,.08)}}
+
+.said{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 20px;font-size:16px;line-height:1.6;
+  box-shadow:0 8px 30px rgba(88,70,150,.08);margin-bottom:22px;animation:up .4s cubic-bezier(.22,1,.36,1) both}
+.cur{display:inline-block;width:2px;height:17px;background:var(--acc);vertical-align:-3px;animation:bl .8s steps(2) infinite}
+@keyframes bl{50%{opacity:0}}
+@keyframes up{from{opacity:0;transform:translateY(12px)}}
+
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:860px){.cols{grid-template-columns:1fr}}
+.col h2{font-size:13px;font-weight:600;letter-spacing:.01em;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.col h2 i{width:7px;height:7px;border-radius:2px;font-style:normal}
+.col h2 b{margin-left:auto;font-weight:400;font-size:12px;color:var(--dim2)}
+.colS{font-size:11.5px;color:var(--dim2);margin-bottom:14px}
+.stack{display:flex;flex-direction:column;gap:11px}
+
+.c{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 17px;
+  box-shadow:0 4px 18px rgba(88,70,150,.06);animation:up .45s cubic-bezier(.22,1,.36,1) both;transition:.2s}
+.c:hover{box-shadow:0 12px 32px rgba(88,70,150,.12);transform:translateY(-2px)}
+.who{font-size:15px;font-weight:500}
+.what{font-size:13px;color:var(--dim);margin-top:4px;line-height:1.5}
+.next{font-size:12px;color:var(--acc);margin-top:9px}
+.gone{opacity:.5}
+.gone .who{color:var(--dim)}
+.tag{font-size:12px;color:var(--ok);margin-top:8px}
+
+.row{display:flex;gap:8px;margin-top:13px}
+.b{flex:1;border:1px solid var(--line2);background:#fff;color:var(--txt);border-radius:11px;padding:9px 12px;
+  font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:.16s;white-space:nowrap}
+.b:hover{background:#FAF9FE;border-color:#CFC7E8}
+.b.p{background:linear-gradient(100deg,var(--acc),var(--acc2));color:#fff;border-color:transparent}
+.b.p:hover{filter:brightness(1.08)}
+
+.work{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--acc);margin-top:8px}
+.bars{display:flex;gap:2.5px;align-items:flex-end;height:11px}
+.bars i{width:2.5px;background:var(--acc);border-radius:2px;animation:eq .9s ease-in-out infinite}
+.bars i:nth-child(1){height:5px}.bars i:nth-child(2){height:10px;animation-delay:.15s}.bars i:nth-child(3){height:7px;animation-delay:.3s}
+@keyframes eq{0%,100%{transform:scaleY(.45)}50%{transform:scaleY(1)}}
+
+.learn{background:linear-gradient(100deg,rgba(17,185,129,.1),rgba(109,92,231,.06));border:1px solid rgba(17,185,129,.26);
+  border-radius:18px;padding:15px 17px;margin-bottom:16px;display:flex;align-items:center;gap:14px;animation:up .4s cubic-bezier(.22,1,.36,1) both}
+.learn .row{margin:0 0 0 auto;flex:none;width:auto}
+.rules{font-size:12.5px;color:var(--ok);margin-bottom:16px}
+.foot{margin-top:74px;text-align:center;font-family:'Instrument Serif',serif;font-size:26px;color:var(--dim2)}
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(90px);background:#fff;border:1px solid var(--line2);
+  border-radius:13px;padding:13px 19px;font-size:13.5px;z-index:90;box-shadow:0 16px 44px rgba(88,70,150,.2);transition:transform .34s cubic-bezier(.22,1,.36,1)}
+.toast.up{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel">
+const {useState} = React;
+
+const SPEECH = "Here's Oscar's email, I can do freelance GTM for him, chase him until he answers.";
+
+const COLS = [
+  {k:'them', t:'Waiting on them', c:'#3EA8F5', s:'It chases. You do nothing.'},
+  {k:'you',  t:'Waiting on you',  c:'#F0567A', s:'It will not guess.'},
+  {k:'done', t:'Closed today',    c:'#11B981', s:'Gone by morning.'},
+];
+
+const SEED = [
+  {id:1,col:'them',who:'Nadia Fontaine',what:'Wants a yes or no on the GTM pitch',
+   next:'Attempt 2 of 4 · Tuesday 9am · new angle',act:['Send it now','Stop chasing'],
+   learn:'chase every pitch four times before giving up'},
+  {id:2,col:'you',who:'Priya Raghavan',what:'Tuesday 2pm or Thursday 10am. Thursday hits your pilot call.',
+   two:['Tuesday','Thursday'],learn:'always protect the pilot calls'},
+  {id:3,col:'you',who:'Marcus Bell',what:'Wants $180, not $299. Third pilot to ask.',
+   two:['Hold $299','Take $180'],learn:'never discount below $299 without asking me'},
+  {id:4,col:'done',who:'Dana Whitfield',what:'Asked about Spanish. Answered from your changelog.',tag:'Replied 6:12am'},
+  {id:5,col:'done',who:'Nine SEO pitches',what:'Same template, nine senders.',tag:'Blocked'},
+];
+
+function App(){
+  const [rec,setRec]=useState(false);
+  const [txt,setTxt]=useState('');
+  const [loops,setLoops]=useState(SEED);
+  const [rule,setRule]=useState(null);
+  const [rules,setRules]=useState([]);
+  const [toast,setToast]=useState(null);
+  const say=m=>{setToast(m);setTimeout(()=>setToast(null),3000)};
+
+  const talk=()=>{
+    if(rec) return;
+    setTxt(''); setRec(true);
+    let i=0;
+    const t=setInterval(()=>{
+      i+=2; setTxt(SPEECH.slice(0,i));
+      if(i>=SPEECH.length){
+        clearInterval(t); setRec(false);
+        setTimeout(()=>setLoops(p=>[{id:9,col:'them',who:'Oscar Bramley',
+          what:'CEO, Lantern Stay Group',working:true},...p]),600);
+        setTimeout(()=>setLoops(p=>p.map(x=>x.id===9?{...x,working:false,
+          what:'Wants a yes or no on the GTM pitch',
+          next:'Attempt 1 of 4 · sent · next Wednesday 8am',
+          act:['Text him too','Stop chasing'],
+          learn:'text as well as email when I have a mobile'}:x)),3400);
+      }
+    },24);
+  };
+
+  const doAct=(m,label)=>{
+    if(label.startsWith('Stop')){ setLoops(p=>p.filter(x=>x.id!==m.id)); say('Stopped.'); return; }
+    setLoops(p=>p.map(x=>x.id===m.id?{...x,col:'done',act:null,two:null,next:null,tag:label}:x));
+    if(m.learn) setRule({label:m.learn});
+  };
+
+  return (<>
+  <div className="wrap">
+    <div className="top">
+      <div>
+        <div className="mark">Lo<em>op</em></div>
+        <div className="sub">Not an inbox. Every open loop you have with a person.</div>
+      </div>
+      <button className={'mic'+(rec?' on':'')} onClick={talk}>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
+          <rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/>
+        </svg>
+        {rec?'Listening…':'Add a loop'}
+      </button>
+    </div>
+
+    {txt && <div className="said">“{txt}{rec&&<span className="cur"/>}”</div>}
+
+    {rule && (
+      <div className="learn">
+        <div>
+          <div className="who">Always do that?</div>
+          <div className="what">I'll {rule.label}.</div>
+        </div>
+        <div className="row">
+          <button className="b p" onClick={()=>{setRules(r=>[...r,rule.label]);setRule(null);say('Learned.')}}>Always</button>
+          <button className="b" onClick={()=>setRule(null)}>Just once</button>
+        </div>
+      </div>
+    )}
+
+    {rules.length>0 && <div className="rules">It now handles {rules.length} thing{rules.length>1?'s':''} without asking.</div>}
+
+    <div className="cols">
+      {COLS.map(c=>{
+        const items=loops.filter(l=>l.col===c.k);
+        return (
+        <div className="col" key={c.k}>
+          <h2><i style={{background:c.c}}/>{c.t}<b>{items.length}</b></h2>
+          <div className="colS">{c.s}</div>
+          <div className="stack">
+            {items.map((m,i)=>(
+              <div className={'c'+(c.k==='done'?' gone':'')} key={m.id} style={{animationDelay:(i*.06)+'s'}}>
+                <div className="who">{m.who}</div>
+                {m.working
+                  ? <div className="work"><span className="bars"><i/><i/><i/></span> writing to him…</div>
+                  : <div className="what">{m.what}</div>}
+                {m.next && <div className="next">{m.next}</div>}
+                {m.tag && <div className="tag">✓ {m.tag}</div>}
+                {(m.act||m.two) && (
+                  <div className="row">
+                    {(m.two||m.act).map((l,k)=>(
+                      <button key={k} className={'b'+(k===0?' p':'')} onClick={()=>doAct(m,l)}>{l}</button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>);
+      })}
+    </div>
+
+    <div className="foot">It holds your loops.</div>
+  </div>
+  <div className={'toast'+(toast?' up':'')}>{toast||''}</div>
+  </>);
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

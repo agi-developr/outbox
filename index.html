@@ -3,131 +3,276 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Loop — it holds your loops</title>
-<meta name="description" content="Not an inbox. Every open loop you have with another person, in one place." />
+<title>Outbox — the email client with no inbox</title>
+<meta name="description" content="Your agent reads everything. You only ever see what's about to go out." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#F7F6FB; --card:#FFF;
-  --line:#EDEAF6; --line2:#DFDAEE;
-  --txt:#17141F; --dim:#6B6584; --dim2:#A29CB4;
-  --acc:#6D5CE7; --acc2:#C86DD7; --ok:#11B981; --hot:#F0567A; --sky:#3EA8F5; --warm:#F0A020;
+  --bg:#08090b; --bg2:#0d0f13; --card:#12151b; --card2:#171b23;
+  --line:#1e232d; --line2:#2a313d;
+  --txt:#e8eaf0; --dim:#8b93a5; --dim2:#5b6373;
+  --acc:#7c8cff; --acc2:#a78bfa;
+  --ok:#3fd68c; --warn:#ffb545; --hot:#ff6b6b; --wait:#5eb8ff;
+  --r:14px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--txt);font-family:Inter,-apple-system,system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;filter:blur(8px);
+html,body{height:100%}
+body{
+  background:var(--bg); color:var(--txt);
+  font-family:Inter,-apple-system,system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+body::before{
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
   background:
-    radial-gradient(760px 520px at 4% -12%, rgba(200,109,215,.28), transparent 62%),
-    radial-gradient(700px 480px at 40% -16%, rgba(109,92,231,.22), transparent 62%),
-    radial-gradient(820px 540px at 98% 0%, rgba(62,168,245,.24), transparent 62%),
-    radial-gradient(720px 620px at 70% 112%, rgba(255,183,143,.22), transparent 62%);}
+    radial-gradient(900px 500px at 12% -8%, rgba(124,140,255,.13), transparent 60%),
+    radial-gradient(800px 500px at 92% 4%, rgba(167,139,250,.10), transparent 60%),
+    radial-gradient(700px 600px at 50% 110%, rgba(94,184,255,.06), transparent 60%);
+}
 #root{position:relative;z-index:1}
 
-.wrap{max-width:1420px;margin:0 auto;padding:34px 28px 90px}
+/* ---------- BOOT / AGENT SORT ANIMATION ---------- */
+.boot{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;transition:opacity .7s ease, visibility .7s}
+.boot.gone{opacity:0;visibility:hidden;pointer-events:none}
+.bootMark{font-family:'Instrument Serif',serif;font-size:64px;letter-spacing:-.02em;margin-bottom:6px}
+.bootMark em{font-style:italic;background:linear-gradient(100deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.bootSub{color:var(--dim);font-size:14px;letter-spacing:.02em;margin-bottom:38px}
+.bootLog{width:440px;max-width:88vw;font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:2.1;color:var(--dim2)}
+.bootLog div{opacity:0;transform:translateY(4px);animation:bl .45s forwards}
+.bootLog b{color:var(--acc);font-weight:500}
+.bootLog i{color:var(--ok);font-style:normal}
+@keyframes bl{to{opacity:1;transform:none}}
+.bootBar{width:440px;max-width:88vw;height:2px;background:var(--line);border-radius:2px;margin-top:26px;overflow:hidden}
+.bootBar span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--acc),var(--acc2));animation:bb 3.1s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes bb{to{width:100%}}
 
-/* zone 1 */
-.top{display:flex;align-items:flex-start;gap:18px;margin-bottom:12px}
-.mark{font-family:'Instrument Serif',serif;font-size:28px;letter-spacing:-.01em;line-height:1}
-.mark em{font-style:italic;background:linear-gradient(100deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
-.sub{font-size:12.5px;color:var(--dim2);margin-top:5px}
-.btns{margin-left:auto;display:flex;gap:9px}
-.pb{display:inline-flex;align-items:center;gap:9px;border:1px solid var(--line2);cursor:pointer;background:#fff;color:var(--txt);
-  font-family:inherit;font-size:13.5px;font-weight:500;padding:11px 18px;border-radius:999px;transition:.18s}
-.pb:hover{border-color:#CFC7E8;transform:translateY(-1px)}
-.pb.on{background:linear-gradient(100deg,var(--acc),var(--acc2));color:#fff;border-color:transparent;box-shadow:0 8px 24px rgba(109,92,231,.3)}
-.pb.rec{animation:br 1.4s ease-in-out infinite}
-@keyframes br{50%{box-shadow:0 8px 24px rgba(109,92,231,.3),0 0 0 14px rgba(109,92,231,.08)}}
-.pulse{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(17,185,129,.16);animation:pl 2.2s infinite}
-@keyframes pl{50%{opacity:.4}}
-.hour{font-size:12.5px;color:var(--dim);display:flex;align-items:center;gap:9px;padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:20px}
+/* ---------- SHELL ---------- */
+.wrap{max-width:1580px;margin:0 auto;padding:26px 30px 90px}
+header.top{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;padding-bottom:22px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:14px}
+.logo{font-family:'Instrument Serif',serif;font-size:34px;letter-spacing:-.02em}
+.logo em{font-style:italic;background:linear-gradient(100deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.tag{color:var(--dim2);font-size:12.5px;letter-spacing:.01em;padding-bottom:2px}
+.acct{display:flex;align-items:center;gap:12px}
+.pill{display:inline-flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 13px;font-size:12px;color:var(--dim)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(63,214,140,.14);animation:pulse 2.4s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+.av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));display:grid;place-items:center;font-size:12px;font-weight:600;color:#fff}
 
-/* voice transcript */
-.said{background:#fff;border:1px solid var(--line);border-radius:18px;padding:17px 19px;font-size:16px;line-height:1.6;
-  box-shadow:0 8px 30px rgba(88,70,150,.08);margin-bottom:16px;animation:up .4s cubic-bezier(.22,1,.36,1) both}
-.cur{display:inline-block;width:2px;height:17px;background:var(--acc);vertical-align:-3px;animation:bl .8s steps(2) infinite}
-@keyframes bl{50%{opacity:0}}
-@keyframes up{from{opacity:0;transform:translateY(12px)}}
+/* ---------- BRIEF ---------- */
+.brief{display:flex;align-items:center;gap:34px;padding:24px 0 26px;flex-wrap:wrap}
+.briefLine{font-family:'Instrument Serif',serif;font-size:29px;line-height:1.3;letter-spacing:-.01em;flex:1;min-width:340px}
+.briefLine b{font-family:Inter,sans-serif;font-size:26px;font-weight:600;background:linear-gradient(100deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.briefLine span{color:var(--dim)}
+.stats{display:flex;gap:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--card)}
+.stat{padding:14px 22px;border-right:1px solid var(--line);min-width:104px}
+.stat:last-child{border-right:0}
+.statN{font-size:24px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.statL{font-size:10.5px;color:var(--dim2);text-transform:uppercase;letter-spacing:.09em;margin-top:3px}
 
-/* zone 2 interview */
-.iv{border-radius:20px;margin-bottom:18px;overflow:hidden;animation:up .4s cubic-bezier(.22,1,.36,1) both;
-  background:linear-gradient(100deg,rgba(109,92,231,.1),rgba(200,109,215,.07));border:1px solid rgba(109,92,231,.26)}
-.ivHd{display:flex;align-items:center;gap:13px;padding:16px 20px;cursor:pointer}
-.eqs{display:flex;gap:3px;align-items:flex-end;height:20px;width:20px;justify-content:center;flex:none}
-.eqs i{width:3px;background:linear-gradient(180deg,var(--acc),var(--acc2));border-radius:2px;animation:eq 1s ease-in-out infinite}
-.eqs i:nth-child(1){height:8px}.eqs i:nth-child(2){height:17px;animation-delay:.16s}.eqs i:nth-child(3){height:11px;animation-delay:.32s}
-@keyframes eq{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
-.ivT{font-size:14.5px;font-weight:600}
-.ivS{font-size:12.5px;color:var(--dim);margin-top:2px}
-.ivGo{margin-left:auto}
-.ivBody{padding:0 20px 18px;display:flex;flex-direction:column;gap:9px}
-.qa{background:#fff;border:1px solid var(--line);border-radius:16px 16px 16px 5px;padding:13px 16px;font-size:14.5px;line-height:1.5;max-width:88%;animation:up .35s both}
-.qa.now{border-color:var(--acc);box-shadow:0 0 0 3px rgba(109,92,231,.1)}
-.qy{align-self:flex-end;background:linear-gradient(100deg,var(--acc),var(--acc2));color:#fff;border-radius:16px 16px 5px 16px;
-  padding:9px 16px;font-size:14px;font-weight:500;animation:up .3s both}
-.qr{font-size:12.5px;color:var(--ok);padding:0 4px 6px;animation:up .35s both}
+/* ---------- BOARD ---------- */
+.board{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:8px}
+@media(max-width:1180px){.board{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.board{grid-template-columns:1fr}}
+.lane{background:linear-gradient(180deg,var(--bg2),rgba(13,15,19,.4));border:1px solid var(--line);border-radius:18px;padding:15px 13px 13px;min-height:220px;transition:border-color .25s}
+.lane:hover{border-color:var(--line2)}
+.laneHd{display:flex;align-items:center;gap:9px;padding:2px 4px 14px}
+.laneDot{width:7px;height:7px;border-radius:2px;flex:none}
+.laneT{font-size:12.5px;font-weight:600;letter-spacing:.01em}
+.laneC{margin-left:auto;font-size:11px;color:var(--dim2);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:2px 8px;font-variant-numeric:tabular-nums}
+.laneSub{font-size:11px;color:var(--dim2);padding:0 4px 13px;line-height:1.5;margin-top:-8px}
 
-/* zone 4 learn */
-.learn{background:linear-gradient(100deg,rgba(17,185,129,.1),rgba(109,92,231,.05));border:1px solid rgba(17,185,129,.28);
-  border-radius:18px;padding:15px 19px;margin-bottom:16px;display:flex;align-items:center;gap:15px;animation:up .4s both}
-.rules{font-size:12.5px;color:var(--ok);margin-bottom:16px;cursor:pointer}
-.rules span{color:var(--dim2)}
-.rlist{font-size:12.5px;color:var(--dim);margin:-8px 0 18px;line-height:1.9;padding-left:2px}
+/* ---------- CARD ---------- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:13px;margin-bottom:10px;cursor:pointer;transition:transform .18s cubic-bezier(.34,1.4,.5,1),border-color .18s,background .18s;position:relative;overflow:hidden;
+  opacity:0;transform:translateY(14px) scale(.97);animation:in .5s cubic-bezier(.22,1,.36,1) forwards}
+@keyframes in{to{opacity:1;transform:none}}
+.card:hover{transform:translateY(-3px);border-color:var(--line2);background:var(--card2)}
+.card::after{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--c,transparent);opacity:.85}
+.cHd{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.cAv{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:10.5px;font-weight:600;flex:none;color:#0a0b0d}
+.cFrom{font-size:12.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cOrg{font-size:10.5px;color:var(--dim2);margin-top:1px}
+.cTime{margin-left:auto;font-size:10.5px;color:var(--dim2);flex:none}
+.cSub{font-size:13.5px;font-weight:500;line-height:1.4;margin-bottom:7px;letter-spacing:-.005em}
+.cSum{font-size:12px;color:var(--dim);line-height:1.55;margin-bottom:11px}
+.cSum b{color:var(--txt);font-weight:500}
+.why{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;color:var(--dim2);background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:7px;padding:4px 8px;line-height:1.3}
+.why svg{flex:none;opacity:.7}
 
-/* zone 3 board */
-.cols{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start}
-@media(max-width:1180px){.cols{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:700px){.cols{grid-template-columns:1fr}}
-.col h2{font-size:12.5px;font-weight:600;margin-bottom:3px;display:flex;align-items:center;gap:8px}
-.col h2 i{width:7px;height:7px;border-radius:2px;flex:none}
-.col h2 b{margin-left:auto;font-weight:400;font-size:11.5px;color:var(--dim2)}
-.colS{font-size:11.5px;color:var(--dim2);margin-bottom:13px}
-.stack{display:flex;flex-direction:column;gap:11px}
+/* drafted reply block */
+.draft{background:rgba(124,140,255,.055);border:1px solid rgba(124,140,255,.2);border-radius:11px;padding:10px 11px;margin:2px 0 10px}
+.draftHd{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--acc);text-transform:uppercase;letter-spacing:.09em;font-weight:600;margin-bottom:7px}
+.draftTx{font-size:12px;line-height:1.6;color:#c9cee0;font-family:Inter}
+.acts{display:flex;gap:7px;margin-top:10px}
+.btn{flex:1;border:1px solid var(--line2);background:var(--card2);color:var(--txt);border-radius:9px;padding:8px 10px;font-size:11.5px;font-weight:500;cursor:pointer;font-family:inherit;transition:.16s;display:flex;align-items:center;justify-content:center;gap:5px}
+.btn:hover{background:#20252f;border-color:#3a4250}
+.btn.pri{background:linear-gradient(100deg,var(--acc),var(--acc2));border-color:transparent;color:#0a0b12;font-weight:600}
+.btn.pri:hover{filter:brightness(1.12)}
+.btn.gh{flex:none;padding:8px 11px;background:transparent}
 
-.c{background:#fff;border:1px solid var(--line);border-radius:18px;padding:15px 16px;
-  box-shadow:0 4px 18px rgba(88,70,150,.06);animation:up .45s cubic-bezier(.22,1,.36,1) both;transition:box-shadow .2s,transform .2s}
-.c:hover{box-shadow:0 12px 32px rgba(88,70,150,.12);transform:translateY(-2px)}
-.who{font-size:14.5px;font-weight:500;line-height:1.3}
-.org{font-size:11.5px;color:var(--dim2);margin-top:2px}
-.what{font-size:12.5px;color:var(--dim);margin-top:7px;line-height:1.55}
-.what b{color:var(--txt);font-weight:500}
-.next{font-size:11.5px;color:var(--acc);margin-top:8px}
-.tag{font-size:12px;color:var(--ok);margin-top:8px}
-.gone{opacity:.52}
-.gone .who{color:var(--dim)}
+/* quick reply */
+.qr{margin-top:9px;display:flex;gap:7px;align-items:center}
+.qr input{flex:1;background:#0b0d11;border:1px solid var(--line);border-radius:9px;padding:9px 11px;color:var(--txt);font-size:12px;font-family:inherit;outline:none;transition:.16s}
+.qr input:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(124,140,255,.12)}
+.qr input::placeholder{color:var(--dim2)}
+.send{width:34px;height:34px;flex:none;border-radius:9px;border:0;background:linear-gradient(100deg,var(--acc),var(--acc2));display:grid;place-items:center;cursor:pointer;transition:.16s}
+.send:hover{filter:brightness(1.15)}
+.hint{font-size:10px;color:var(--dim2);margin-top:6px;padding-left:2px}
+.hint kbd{background:var(--card2);border:1px solid var(--line2);border-radius:4px;padding:1px 4px;font-family:'JetBrains Mono',monospace;font-size:9.5px}
 
-.gc{background:#F8F7FC;border:1px solid var(--line);border-radius:11px;padding:9px 11px;margin-top:9px}
-.gr{display:flex;gap:8px;font-size:11.5px;line-height:1.5;color:var(--dim);padding:1px 0}
-.gp{color:var(--ok);font-weight:700;width:8px;flex:none}
-.gm{color:var(--warm);font-weight:700;width:8px;flex:none}
+/* sent state */
+.card.sent{opacity:.42;pointer-events:none}
+.sentTag{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--ok);margin-top:8px;font-weight:500}
 
-.row{display:flex;gap:7px;margin-top:11px}
-.b{flex:1;border:1px solid var(--line2);background:#fff;color:var(--txt);border-radius:11px;padding:9px 11px;
-  font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit;transition:.16s;white-space:nowrap}
-.b:hover{background:#FAF9FE;border-color:#CFC7E8}
-.b.p{background:linear-gradient(100deg,var(--acc),var(--acc2));color:#fff;border-color:transparent}
-.b.p:hover{filter:brightness(1.08)}
-.b.g{color:var(--dim2);flex:none;padding:9px 12px}
+/* ---------- HANDLED / LOG ---------- */
+.logRow{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;font-size:11.5px;color:var(--dim);transition:.16s;cursor:default;
+  opacity:0;animation:in .45s cubic-bezier(.22,1,.36,1) forwards}
+.logRow:hover{background:var(--card)}
+.logIco{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;flex:none;font-size:10px}
+.logTx{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.logTx b{color:#b9c0d0;font-weight:500}
+.logAct{font-size:10px;color:var(--dim2);flex:none;font-family:'JetBrains Mono',monospace}
 
-.qf{display:flex;gap:7px;margin-top:9px}
-.qf input{flex:1;background:#FBFAFE;border:1px solid var(--line);border-radius:11px;padding:9px 11px;font-size:12.5px;
-  color:var(--txt);font-family:inherit;outline:none;transition:.16s;min-width:0}
-.qf input:focus{border-color:var(--acc);background:#fff;box-shadow:0 0 0 3px rgba(109,92,231,.1)}
-.qf input::placeholder{color:var(--dim2)}
-.snd{width:34px;height:34px;flex:none;border-radius:11px;border:0;background:linear-gradient(100deg,var(--acc),var(--acc2));
-  display:grid;place-items:center;cursor:pointer;transition:.16s}
-.snd:hover{filter:brightness(1.1)}
+/* ---------- DRAWER ---------- */
+.scrim{position:fixed;inset:0;background:rgba(4,5,7,.72);backdrop-filter:blur(6px);z-index:60;opacity:0;animation:fade .25s forwards}
+@keyframes fade{to{opacity:1}}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,94vw);background:var(--bg2);border-left:1px solid var(--line);z-index:61;overflow-y:auto;transform:translateX(100%);animation:slide .38s cubic-bezier(.22,1,.36,1) forwards;padding:26px 28px 44px}
+@keyframes slide{to{transform:none}}
+.dClose{position:absolute;top:20px;right:22px;width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--dim);cursor:pointer;font-size:15px;line-height:1}
+.dFrom{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.dAv{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-weight:600;font-size:14px;color:#0a0b0d}
+.dSub{font-family:'Instrument Serif',serif;font-size:27px;line-height:1.25;letter-spacing:-.01em;margin-bottom:18px}
+.dBody{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 17px;font-size:13px;line-height:1.75;color:#c2c8d8;white-space:pre-line;margin-bottom:20px}
+.secT{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim2);font-weight:600;margin:22px 0 10px;display:flex;align-items:center;gap:8px}
+.secT::after{content:'';flex:1;height:1px;background:var(--line)}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.chip{border:1px solid var(--line2);background:var(--card);border-radius:999px;padding:6px 12px;font-size:11.5px;color:var(--dim);cursor:pointer;transition:.16s;font-family:inherit}
+.chip:hover{border-color:var(--acc);color:var(--txt)}
+.chip.on{background:rgba(124,140,255,.14);border-color:var(--acc);color:#cdd4ff}
+textarea.dEdit{width:100%;min-height:150px;background:#0b0d11;border:1px solid var(--line2);border-radius:12px;padding:14px;color:var(--txt);font-size:13px;line-height:1.7;font-family:inherit;outline:none;resize:vertical}
+textarea.dEdit:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(124,140,255,.12)}
+.reason{font-size:12px;color:var(--dim);line-height:1.7;background:rgba(255,255,255,.02);border:1px solid var(--line);border-left:2px solid var(--acc);border-radius:0 11px 11px 0;padding:12px 14px}
+.reason b{color:var(--txt);font-weight:500}
+.dActs{display:flex;gap:9px;margin-top:18px}
 
-.work{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--acc);margin-top:8px}
-.bars{display:flex;gap:2.5px;align-items:flex-end;height:11px}
-.bars i{width:2.5px;background:var(--acc);border-radius:2px;animation:eq .9s ease-in-out infinite}
-.bars i:nth-child(1){height:5px}.bars i:nth-child(2){height:10px;animation-delay:.15s}.bars i:nth-child(3){height:7px;animation-delay:.3s}
+/* ---------- FOOTER PITCH ---------- */
+.pitch{margin-top:64px;padding-top:44px;border-top:1px solid var(--line);text-align:center}
+.pitch h3{font-family:'Instrument Serif',serif;font-size:38px;font-weight:400;line-height:1.35;letter-spacing:-.015em;color:var(--dim)}
+.pitch p{font-size:13px;color:var(--dim);line-height:1.75}
+.pitch p+p{margin-top:11px}
+.pitch em{color:var(--txt);font-style:normal}
+.kicker{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--acc);font-weight:600;margin-bottom:9px}
 
-.foot{margin-top:76px;text-align:center;font-family:'Instrument Serif',serif;font-size:26px;color:var(--dim2)}
-.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(90px);background:#fff;border:1px solid var(--line2);
-  border-radius:13px;padding:13px 19px;font-size:13.5px;z-index:90;box-shadow:0 16px 44px rgba(88,70,150,.2);transition:transform .34s cubic-bezier(.22,1,.36,1)}
+/* gain vs cost */
+.gc{background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:11px;padding:9px 11px;margin:2px 0 10px}
+.gcR{display:flex;gap:8px;font-size:11.5px;line-height:1.55;color:var(--dim);padding:2px 0}
+.gcP{color:var(--ok);font-weight:700;flex:none;width:9px}
+.gcM{color:var(--warn);font-weight:700;flex:none;width:9px}
+/* new follow-up composer */
+.compose{background:rgba(94,184,255,.05);border:1px dashed rgba(94,184,255,.35);border-radius:12px;padding:11px;margin-bottom:11px}
+.composeL{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--wait);font-weight:600;margin-bottom:7px}
+.compose input{width:100%;background:#0b0d11;border:1px solid var(--line);border-radius:9px;padding:9px 11px;color:var(--txt);font-size:12px;font-family:inherit;outline:none}
+.compose input:focus{border-color:var(--wait);box-shadow:0 0 0 3px rgba(94,184,255,.12)}
+.compose input::placeholder{color:var(--dim2)}
+.composeH{font-size:10px;color:var(--dim2);margin-top:6px;line-height:1.5}
+/* live delivery */
+.liveBtn{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line2);border-radius:999px;padding:8px 15px;font-size:12px;color:var(--txt);cursor:pointer;font-family:inherit;font-weight:500;transition:.18s}
+.liveBtn:hover:not(:disabled){border-color:var(--acc);background:var(--card2)}
+.liveBtn:disabled{opacity:.55;cursor:default}
+.thinking{display:flex;align-items:center;gap:14px;background:linear-gradient(100deg,rgba(124,140,255,.09),rgba(167,139,250,.05));border:1px solid rgba(124,140,255,.3);border-radius:16px;padding:14px 18px;margin-bottom:16px;
+  opacity:0;transform:translateY(-8px);animation:in .4s cubic-bezier(.22,1,.36,1) forwards;position:relative;overflow:hidden}
+.thinking::after{content:'';position:absolute;left:0;bottom:0;height:2px;width:0;background:linear-gradient(90deg,var(--acc),var(--acc2));animation:bb 2.6s cubic-bezier(.4,0,.2,1) forwards}
+.thAv{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:12px;font-weight:600;color:#0a0b0d;flex:none}
+.thTop{font-size:11px;color:var(--dim2)}
+.thTop b{color:var(--txt);font-weight:500}
+.thSub{font-size:14px;font-weight:500;margin-top:2px}
+.thSteps{display:flex;gap:9px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--dim2);flex-wrap:wrap;justify-content:flex-end}
+.thSteps span{opacity:0;animation:bl .4s forwards;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:6px;padding:4px 9px}
+.thSteps span:last-child{color:var(--acc);border-color:rgba(124,140,255,.4)}
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--card2);border:1px solid var(--line2);border-radius:12px;padding:12px 18px;font-size:12.5px;z-index:90;display:flex;align-items:center;gap:9px;box-shadow:0 16px 50px rgba(0,0,0,.6);transition:transform .34s cubic-bezier(.22,1,.36,1)}
 .toast.up{transform:translateX(-50%) translateY(0)}
+
+/* ================= CLOUDY LIGHT SKIN ================= */
+:root{
+  --bg:#F7F6FB; --bg2:#FFFFFF; --card:#FFFFFF; --card2:#FBFAFE;
+  --line:#EBE8F4; --line2:#DCD7ED;
+  --txt:#16131F; --dim:#6C6683; --dim2:#9C96AF;
+  --acc:#6D5CE7; --acc2:#C86DD7;
+  --ok:#12B981; --warn:#F0A020; --hot:#F0567A; --wait:#3EA8F5;
+}
+body{background:var(--bg)}
+body::before{
+  background:
+    radial-gradient(760px 520px at 8% -10%, rgba(200,109,215,.30), transparent 62%),
+    radial-gradient(700px 480px at 42% -14%, rgba(109,92,231,.24), transparent 62%),
+    radial-gradient(820px 540px at 92% 2%, rgba(62,168,245,.26), transparent 62%),
+    radial-gradient(700px 620px at 68% 108%, rgba(255,183,143,.26), transparent 62%),
+    radial-gradient(620px 560px at 14% 96%, rgba(18,185,129,.16), transparent 62%);
+  filter:blur(6px);
+}
+.boot{background:var(--bg)}
+.bootLog{color:var(--dim)}
+.bootLog i{color:var(--ok)}
+.bootBar{background:var(--line)}
+.av{color:#fff}
+.stats{background:rgba(255,255,255,.72);backdrop-filter:blur(16px);box-shadow:0 6px 26px rgba(88,70,150,.07)}
+.pill,.liveBtn{background:rgba(255,255,255,.74);backdrop-filter:blur(14px)}
+.lane{
+  background:rgba(255,255,255,.5); backdrop-filter:blur(18px);
+  border-color:rgba(255,255,255,.9);
+  box-shadow:0 10px 40px rgba(88,70,150,.06);
+}
+.lane:hover{border-color:#fff}
+.laneC{background:rgba(255,255,255,.8)}
+.card{box-shadow:0 3px 14px rgba(88,70,150,.06)}
+.card:hover{box-shadow:0 12px 34px rgba(88,70,150,.13)}
+.cAv,.dAv,.thAv{color:#fff}
+.why,.gc{background:#F8F7FC}
+.draft{background:rgba(109,92,231,.05);border-color:rgba(109,92,231,.18)}
+.draftTx{color:#3A3450}
+.btn{background:#fff;border-color:var(--line2)}
+.btn:hover{background:#F8F7FC;border-color:#C9C1E4}
+.btn.pri{color:#fff;box-shadow:0 4px 16px rgba(109,92,231,.32)}
+.qr input,.compose input,textarea.dEdit{background:#fff}
+.send svg{stroke:#fff}
+.logRow:hover{background:#fff}
+.logTx b{color:#332C47}
+.scrim{background:rgba(40,32,64,.34)}
+.drawer{background:var(--bg);box-shadow:-24px 0 70px rgba(88,70,150,.14)}
+.dBody{color:#453E5C}
+.reason{background:#fff}
+.thinking{background:linear-gradient(100deg,rgba(109,92,231,.09),rgba(200,109,215,.07));border-color:rgba(109,92,231,.22);box-shadow:0 8px 30px rgba(88,70,150,.09)}
+.thSteps span{background:rgba(255,255,255,.86)}
+.toast{background:#fff;box-shadow:0 14px 44px rgba(88,70,150,.2)}
+.pitch p{color:var(--dim)}
+
+/* ---------- THE CALL ---------- */
+.callWrap{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(560px,94vw);max-height:86vh;overflow:auto;
+  background:var(--bg2);border:1px solid var(--line);border-radius:24px;z-index:61;padding:24px 26px 22px;
+  box-shadow:0 30px 90px rgba(88,70,150,.28);animation:pop .4s cubic-bezier(.22,1,.36,1)}
+@keyframes pop{from{opacity:0;transform:translate(-50%,-46%) scale(.96)}}
+.callHd{display:flex;align-items:center;gap:14px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.callRing{display:flex;align-items:flex-end;gap:3px;height:26px;width:26px;flex:none;justify-content:center}
+.callRing span{width:3px;background:linear-gradient(180deg,var(--acc),var(--acc2));border-radius:2px;animation:eq 1s ease-in-out infinite}
+.callRing span:nth-child(1){height:10px;animation-delay:0s}
+.callRing span:nth-child(2){height:22px;animation-delay:.18s}
+.callRing span:nth-child(3){height:14px;animation-delay:.36s}
+@keyframes eq{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+.callT{font-size:15px;font-weight:600}
+.callS{font-size:12px;color:var(--dim2);margin-top:2px}
+.callBody{padding:18px 0 4px;display:flex;flex-direction:column;gap:9px}
+.bubA{background:var(--card);border:1px solid var(--line);border-radius:16px 16px 16px 5px;padding:12px 15px;font-size:14px;line-height:1.55;max-width:92%;
+  animation:in .4s cubic-bezier(.22,1,.36,1) both}
+.bubA.now{border-color:var(--acc);box-shadow:0 0 0 3px rgba(109,92,231,.1)}
+.bubY{align-self:flex-end;background:linear-gradient(100deg,var(--acc),var(--acc2));color:#fff;border-radius:16px 16px 5px 16px;padding:9px 15px;font-size:14px;font-weight:500;margin:7px 0;
+  animation:in .35s cubic-bezier(.22,1,.36,1) both}
+.bubR{font-size:12px;color:var(--ok);padding:0 4px 10px;animation:in .4s .1s cubic-bezier(.22,1,.36,1) both}
+.callActs{display:flex;gap:9px;padding-top:14px;border-top:1px solid var(--line);margin-top:8px}
+.callFoot{font-size:11px;color:var(--dim2);text-align:center;padding-top:13px;line-height:1.5}
+.callBtn{background:linear-gradient(100deg,var(--acc),var(--acc2))!important;color:#fff!important;border-color:transparent!important;font-weight:600;box-shadow:0 4px 16px rgba(109,92,231,.3)}
+.callBtn .dot{background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.3)}
 </style>
 </head>
 <body>
@@ -135,229 +280,468 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;fil
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+
 <script type="text/babel">
-const {useState} = React;
+const {useState,useEffect,useRef} = React;
 
-const SPEECH = "Here's Oscar's email, I can do freelance GTM for him, chase him until he answers.";
+/* ================= DATA ================= */
+const hue = s => { let h=0; for(const c of s) h=(h*31+c.charCodeAt(0))%360; return h; };
+const av  = s => `hsl(${hue(s)} 62% 68%)`;
+const ini = s => s.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
 
-const COLS = [
-  {k:'them', t:'Waiting on them', c:'#3EA8F5', s:'It chases. You do nothing.'},
-  {k:'you',  t:'Waiting on you',  c:'#F0567A', s:'It will not guess.'},
-  {k:'now',  t:'Doing now',       c:'#6D5CE7', s:'Working while you read this.'},
-  {k:'done', t:'Closed today',    c:'#11B981', s:'Gone by morning.'},
+const LANES = [
+  {id:'you',   t:'Needs you',    c:'var(--hot)',  sub:'It will not guess.'},
+  {id:'ready', t:'Reply ready',  c:'var(--acc)',  sub:'Written. Tap send.'},
+  {id:'wait',  t:'Chasing for you', c:'var(--wait)', sub:'It remembers. You don\'t have to.'},
+  {id:'done',  t:'Handled',      c:'var(--ok)',   sub:'Nothing needed.'},
 ];
 
-const SEED = [
-  {id:1,col:'them',kind:'chase',who:'Nadia Fontaine',org:'CEO, Meridian Hotels',
-   what:'Opened <b>3 times</b>, never replied.',next:'Attempt 2 of 4 · Tue 9am · new angle from their Glassdoor reviews',
-   act:['Send it now','Stop'],learn:'chase every pitch four times before giving up'},
-  {id:2,col:'them',kind:'chase',who:'Twilio Support',org:'Ticket #88214',
-   what:'Tier 2 escalation. <b>SLA expires 4pm tomorrow.</b>',next:'Chases automatically at 4pm',
-   act:['Chase now','Stop'],learn:'always hold vendors to their own SLA'},
+const MAIL = [
+  { id:1, lane:'you', from:'Priya Raghavan', org:'Sequoia Capital', time:'7:12am',
+    sub:'Partner meeting — Tuesday or Thursday?',
+    sum:'<b>Tue 2pm</b> or <b>Thu 10am</b>. Thursday hits your pilot call.',
+    why:'Your call, not mine.',
+    body:`Ilia,\n\nGreat call last week. I'd like to bring you in front of the full partnership.\n\nWe have Tuesday 2pm or Thursday 10am. Either works on our side — whichever is easier for you.\n\nCome ready to walk through the hotel pilot numbers.\n\nBest,\nPriya`,
+    reason:'Both slots are free, so this is not a scheduling problem — it is a priority call. Thursday overlaps the Sunset Inn pilot, which you marked <b>do not move</b> on Aug 24. I will not silently reschedule revenue.',
+    draft:'Tuesday 2pm works — I\'ll come with the pilot numbers and the call recordings. Looking forward to it.'},
 
-  {id:3,col:'you',kind:'decision',who:'Priya Raghavan',org:'Sequoia Capital',
-   what:'<b>Tue 2pm</b> or <b>Thu 10am</b>. Thursday hits your pilot call.',
-   two:['Tuesday','Thursday'],learn:'always protect the pilot calls'},
-  {id:4,col:'you',kind:'decision',who:'Marcus Bell',org:'Sunset Inn, 32 rooms',
-   what:'Wants <b>$180</b>, not $299. Third pilot to ask.',
-   two:['Hold $299','Take $180'],quick:true,learn:'never discount below $299 without asking me'},
-  {id:5,col:'you',kind:'event',who:'Agentic Infra Night',org:'Invite · Thu 6–9pm · SoMa',
-   gain:['4 hotel-tech founders on the guest list','2 Twilio voice engineers, your open ticket'],
-   cost:['Your only free evening this week'],
-   two:['Add to calendar','Decline'],learn:'accept invites where three or more leads will be'},
+  { id:2, lane:'you', from:'Marcus Bell', org:'Sunset Inn — 32 rooms', time:'6:48am',
+    sub:'We want to go live, but on a discount',
+    sum:'Wants <b>$180</b>, not $299. Third pilot to ask.',
+    why:'Pricing is yours.',
+    body:`Hi Ilia,\n\nThe team loved the two-week trial — we caught 41 calls we would have missed.\n\nOne thing: $299 is above what we budgeted. Could you do $180/month? If so I can sign today.\n\nMarcus`,
+    reason:'Third pilot in nine days anchoring at the same number. That is a <b>price signal, not a negotiation</b>. Deciding this once sets your floor, so I am not drafting a yes or a no.',
+    draft:'41 missed calls in two weeks is roughly $8k of bookings. Let\'s hold $299 and I\'ll add the after-hours routing at no charge.'},
 
-  {id:6,col:'done',kind:'native',who:'Lunch with Dana',org:'Blue Bottle, 66 Mint St',
-   tag:'On your calendar',act:['Open in Maps'],
-   href:'https://maps.apple.com/?q=Blue%20Bottle%2066%20Mint%20St%20San%20Francisco',
-   learn:'open any address in Maps without asking'},
-  {id:7,col:'done',kind:'decision',who:'Dana Whitfield',org:'Harborview Suites',
-   what:'Asked about Spanish. Answered from your changelog.',tag:'Replied 6:12am'},
-  {id:8,col:'done',kind:'spam',who:'Nine SEO pitches',org:'Same template, nine senders',
-   tag:'Blocked',act:['Never again'],learn:'block cold SEO pitches on sight'},
+  { id:3, lane:'ready', from:'Elijah-Justin Leano', org:'IxDF San Francisco', time:'5:23pm',
+    sub:'Venue address correction — 530 Howard St',
+    sum:'New address: <b>530 Howard St, Suite 300</b>. Doors 5:30.',
+    why:'Nothing at stake.',
+    body:`Sorry there was also a typo on the address. Here is the actual address:\n\n📍 Venue: 530 Howard St, Suite 300\n\nDoors open at 5:30pm. If the gate is locked, message me.`,
+    reason:'Logistics acknowledgement. No commitment, no money, no new obligation — safe to answer in your voice.',
+    draft:'Got it — 530 Howard, Suite 300. See you at 5:30.'},
+
+  { id:4, lane:'ready', from:'Dana Whitfield', org:'Harborview Suites', time:'Yesterday',
+    sub:'Can it answer in Spanish?',
+    sum:'Asks about Spanish. <b>You shipped it Aug 19</b>.',
+    why:'Already in your docs.',
+    body:`Hi — about half our callers speak Spanish first. Does your receptionist handle that, or does it hand off?`,
+    reason:'I checked your changelog rather than guessing. Spanish shipped <b>Aug 19</b> with automatic language detection on the first sentence, so the answer is a fact I can cite, not a promise I invented.',
+    draft:'Yes — it detects the caller\'s language in the first sentence and answers in Spanish natively, no handoff. Happy to run a live test call on your line this week.'},
+
+  { id:5, lane:'ready', from:'Tomás Herrera', org:'Cedar Motor Lodge', time:'Yesterday',
+    sub:'Invoice #1043 — wrong billing address',
+    sum:'Stale billing address. Correct one is <b>in your CRM</b>.',
+    why:'Verified against your CRM.',
+    body:`The invoice has our old address on it. Can you reissue with 1120 Cedar Ave, Bakersfield CA 93301?`,
+    reason:'The address he gave matches the record updated in your CRM on Aug 11, so the two sources agree. Reissuing an invoice is reversible, which is why this sits in Reply ready and not in Needs you.',
+    draft:'Fixed — reissuing #1043 to 1120 Cedar Ave, Bakersfield CA 93301. New copy is on its way now.'},
+
+  { id:8, lane:'you', kind:'event', from:'AI Tinkerers SF', org:'Invite · Thu 6pm · SoMa', time:'9:04am',
+    sub:'Agentic Infra Night — 180 builders',
+    sum:'<b>Thu 6–9pm.</b> Worth it or not:',
+    why:'Two taps, no typing.',
+    gain:['4 hotel-tech founders on the public guest list','2 Twilio voice engineers — your open SIP ticket','Cepien AI is demoing; adjacent to your triage stack'],
+    cost:['Thu 6–9pm is your only free evening this week','45 min each way from your place'],
+    body:`You're invited to Agentic Infra Night — 180 builders, lightning demos, open bar.\nThursday 6pm, SoMa.`,
+    reason:'I read the public guest list and matched it against your CRM and your open vendor tickets. Three real reasons to go, two real reasons not to. <b>I will not put something on your calendar for you.</b>',
+    draft:''},
+
+  { id:9, lane:'wait', kind:'chase', from:'Nadia Fontaine', org:'CEO · Meridian Hotels', time:'attempt 2 of 4',
+    sub:'AI GTM freelance pitch — no reply yet',
+    sum:'Opened <b>3×</b>, no reply. Next nudge <b>Tue 9am</b>, new angle.',
+    why:'It remembers so you don\'t.',
+    body:`Your pitch, sent Aug 21:\n\n"Nadia — I build AI phone receptionists for hotels. Meridian's 6 properties are losing after-hours bookings. Worth 15 minutes?"`,
+    reason:'Three opens and no reply means the message landed but the hook did not. Sending the same note again wastes the thread, so attempt 2 leads with <b>their own Glassdoor reviews</b> naming missed reservation calls. Four attempts, then I stop and tell you.',
+    draft:'Nadia — following up with something concrete. Three of Meridian\'s recent Glassdoor reviews mention calls going unanswered at the front desk. That\'s the exact gap I close. 15 minutes this week?'},
+
+  { id:10, lane:'wait', kind:'chase', from:'Oscar Bramley', org:'CEO · Lantern Stay Group', time:'attempt 1 of 4',
+    sub:'AI GTM freelance pitch — no reply yet',
+    sum:'<b>Never opened.</b> New subject line Wed 8am.',
+    why:'Subject-line problem.',
+    body:`Your pitch, sent Aug 25:\n\n"Oscar — quick note about after-hours booking capture across the Lantern properties."`,
+    reason:'Zero opens after four days means it never got read, so changing the argument would be solving the wrong problem. Attempt 2 changes <b>only the subject line</b> and keeps the body, which isolates the variable.',
+    draft:'Oscar — resending with a clearer subject. After-hours calls at Lantern are going to voicemail; I close that gap for hotel groups your size. Worth 15 minutes?'},
+
+  { id:6, lane:'wait', from:'Rachel Kim', org:'Y Combinator', time:'2d ago',
+    sub:'S26 application — interview scheduling',
+    sum:'<b>No reply in 48h.</b> Nudge armed for Friday 9am.',
+    why:'Armed, not fired.',
+    body:`Thanks for applying. We're scheduling interviews for the week of the 8th — send over a few windows.`,
+    reason:'You answered on Aug 26 and nothing came back. Standard YC turnaround is 2–4 days, so a nudge before Friday reads as anxious rather than diligent. I am holding it.',
+    draft:'Following up on the windows I sent Tuesday — still open on all three. Happy to work around your side.'},
+
+  { id:7, lane:'wait', from:'Sam Ortega', org:'Twilio Support', time:'3d ago',
+    sub:'Ticket #88214 — SIP trunk latency',
+    sum:'Their <b>SLA expires 4pm tomorrow</b>. Clock is held.',
+    why:'Clock tracked.',
+    body:`Your ticket has been escalated to our voice engineering team. Expect an update within 72 hours.`,
+    reason:'I read the 72-hour window off their own reply and put it on a timer. If nothing lands by <b>4pm tomorrow</b> I chase, and the chase quotes their SLA back at them.',
+    draft:'Checking in on #88214 — the 72-hour window from your escalation note closes at 4pm today. What\'s the current status?'},
 ];
 
+const HANDLED = [
+  {t:'<b>Stripe</b> — payout $4,120 cleared', a:'filed', k:'ok'},
+  {t:'<b>LinkedIn</b> — 14 connection digests', a:'archived', k:'mute'},
+  {t:'<b>Notion</b> — 6 comment notifications', a:'batched', k:'mute'},
+  {t:'<b>Anthropic</b> — usage report, nothing anomalous', a:'filed', k:'ok'},
+  {t:'<b>Delta</b> — SFO→AUS boarding pass', a:'to wallet', k:'ok'},
+  {t:'<b>3 recruiters</b> — declined in your voice', a:'replied', k:'sent'},
+  {t:'<b>Vercel</b> — deploy succeeded, motel4.ai', a:'filed', k:'ok'},
+  {t:'<b>“Final notice” SEO spam</b> ×9', a:'blocked', k:'mute'},
+  {t:'<b>Twenty CRM</b> — 22 new leads synced', a:'filed', k:'ok'},
+  {t:'<b>Apple</b> — receipt, $2.99', a:'filed', k:'ok'},
+  {t:'<b>Calendly</b> — Thu 3pm confirmed', a:'on calendar', k:'ok'},
+  {t:'<b>2 newsletters</b> — nothing you follow', a:'unsubbed', k:'mute'},
+];
+
+/* live-arrival demo: a new mail lands and the agent sorts it on stage */
+const INCOMING = [
+  { id:101, lane:'ready', from:'Grace Nakamura', org:'Bayside Lodge', time:'just now',
+    sub:'Do you integrate with Cloudbeds?',
+    sum:'Pre-sale integration question. <b>Cloudbeds shipped Aug 6</b> — pulled from your own integrations page.',
+    why:'Already in your docs.',
+    body:`Hi — we run Cloudbeds for our PMS. Does your receptionist push bookings into it directly?`,
+    reason:'Checked your integrations page rather than guessing. Cloudbeds went live <b>Aug 6</b> with two-way booking sync, so this is a citable fact, not a promise.',
+    draft:'Yes — two-way sync with Cloudbeds since Aug 6, bookings land directly in your PMS. Want me to run a test booking on your account?'},
+  { id:102, lane:'you', from:'Devin Alvarez', org:'Alvarez Hospitality Group', time:'just now',
+    sub:'Exclusive for 11 properties — 12 months',
+    sum:'Wants an <b>exclusivity clause</b> across 11 properties in exchange for a 12-month prepay. That locks out the rest of the region.',
+    why:'Exclusivity is a strategy call. No draft written.',
+    body:`Ilia — we'd prepay 12 months across all 11 properties if you give us regional exclusivity for the year.`,
+    reason:'Prepay is attractive, but exclusivity <b>removes every other hotel in the region</b> from your pipeline for a year. That trade is yours to make, so I wrote nothing.',
+    draft:'Prepay is interesting. Exclusivity I need to think about — can we do volume pricing without the regional lock?'},
+];
+
+/* the interview: the agent calls and asks only what it cannot decide */
 const QS = [
-  {q:'Priya wants Tuesday 2pm or Thursday 10am. Thursday hits your pilot call.',a:['Tuesday','Thursday'],
-   r:'Tuesday confirmed. Pilot call untouched.',clears:3},
-  {q:'Sunset Inn wants $180, not $299. Third pilot to ask.',a:['Hold $299','Take $180'],
-   r:'Holding $299. Added after-hours routing as the sweetener.',clears:4},
-  {q:'Agentic Infra Night, Thursday. Four hotel founders will be there.',a:['Add it','Skip it'],
-   r:'On your calendar. Two overlapping invites declined.',clears:5},
+  {q:'Priya wants Tuesday 2pm or Thursday 10am. Thursday hits your pilot call.', a:['Tuesday','Thursday'],
+   res:'Tuesday 2pm confirmed. Pilot call untouched.', clears:1},
+  {q:'Sunset Inn wants $180 instead of $299. Third pilot to ask.', a:['Hold $299','Take $180'],
+   res:'Holding $299. I added after-hours routing as the sweetener.', clears:2},
+  {q:'Agentic Infra Night, Thursday 6pm. Four hotel founders on the list.', a:['Add it','Skip it'],
+   res:'On your calendar. Two overlapping invites declined.', clears:8},
 ];
 
-function App(){
-  const [loops,setLoops]=useState(SEED);
-  const [rec,setRec]=useState(false);
-  const [txt,setTxt]=useState('');
-  const [iv,setIv]=useState(false);
-  const [qi,setQi]=useState(0);
+const TONES = ['Your default','Warmer','Shorter','Firmer','More formal'];
+const RETONE = {
+  'Warmer':t=>t.replace(/^/, 'Thanks for the nudge — ').replace(/\.$/,'. Really appreciate it.'),
+  'Shorter':t=>t.split(/[.—]/)[0].trim()+'.',
+  'Firmer':t=>t.replace(/Happy to|happy to/,'I\'ll').replace(/^/, ''),
+  'More formal':t=>'Hi,\n\n'+t+'\n\nBest regards,\nIlia',
+};
+
+/* ================= BOOT ================= */
+function Boot(){
+  const lines=[
+    'reading <b>47</b> messages',
+    'checking your calendar and CRM',
+    '<i>41 handled</i> · 4 drafted · 2 for you',
+  ];
+  return (
+    <div className="boot" id="boot">
+      <div className="bootMark">Out<em>box</em></div>
+      <div className="bootSub">the email client with no inbox</div>
+      <div className="bootLog">
+        {lines.map((l,i)=><div key={i} style={{animationDelay:(i*.42)+'s'}} dangerouslySetInnerHTML={{__html:l}}/>)}
+      </div>
+      <div className="bootBar"><span/></div>
+    </div>
+  );
+}
+
+/* ================= CARD ================= */
+function Card({m,i,onOpen,onSend}){
+  const [q,setQ]=useState('');
+  const [sent,setSent]=useState(false);
+  const fire=(txt)=>{ setSent(true); onSend(txt||m.draft,m.from); };
+  const c = LANES.find(l=>l.id===m.lane).c;
+  return (
+    <div className={'card'+(sent?' sent':'')} style={{'--c':c,animationDelay:(i*.06)+'s'}} onClick={e=>{if(!e.target.closest('button,input'))onOpen(m)}}>
+      <div className="cHd">
+        <div className="cAv" style={{background:av(m.from)}}>{ini(m.from)}</div>
+        <div style={{minWidth:0}}>
+          <div className="cFrom">{m.from}</div>
+          <div className="cOrg">{m.org}</div>
+        </div>
+        <div className="cTime">{m.time}</div>
+      </div>
+      <div className="cSub">{m.sub}</div>
+      <div className="cSum" dangerouslySetInnerHTML={{__html:m.sum}}/>
+
+      {m.lane==='ready' && !sent && (
+        <div className="draft">
+          <div className="draftHd">✎ drafted in your voice</div>
+          <div className="draftTx">{m.draft}</div>
+        </div>
+      )}
+
+      <div className="why">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
+        {m.why}
+      </div>
+
+      {sent && <div className="sentTag">✓ Sent · thread muted until they reply</div>}
+
+      {!sent && m.lane==='ready' && (
+        <div className="acts">
+          <button className="btn pri" onClick={()=>fire()}>Send</button>
+          <button className="btn" onClick={()=>onOpen(m)}>Edit</button>
+        </div>
+      )}
+
+      {!sent && m.kind==='event' && (
+        <>
+          <div className="gc">
+            {m.gain.map((g,k)=><div className="gcR" key={k}><span className="gcP">+</span>{g}</div>)}
+            {m.cost.map((c,k)=><div className="gcR" key={k}><span className="gcM">−</span>{c}</div>)}
+          </div>
+          <div className="acts">
+            <button className="btn pri" onClick={()=>{setSent(true);onSend('cal',m.from)}}>Add to calendar</button>
+            <button className="btn" onClick={()=>{setSent(true);onSend('no',m.from)}}>Decline</button>
+          </div>
+        </>
+      )}
+
+      {!sent && m.kind==='chase' && (
+        <div className="acts">
+          <button className="btn pri" onClick={()=>fire()}>Approve next nudge</button>
+          <button className="btn" onClick={()=>onOpen(m)}>See the angle</button>
+        </div>
+      )}
+
+      {!sent && m.lane==='you' && !m.kind && (
+        <>
+          <div className="qr">
+            <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Tell it what you decided…"
+              onKeyDown={e=>{if(e.key==='Enter'&&q.trim())fire(q)}}/>
+            <button className="send" onClick={()=>q.trim()&&fire(q)}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0a0b12" strokeWidth="2.4" strokeLinecap="round"><path d="M5 12h13M12 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+          <div className="hint">Type the decision, not the email.</div>
+        </>
+      )}
+
+      {!sent && m.lane==='wait' && !m.kind && (
+        <div className="acts">
+          <button className="btn" onClick={()=>fire()}>Nudge now</button>
+          <button className="btn gh" onClick={()=>onOpen(m)}>Why</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ================= DRAWER ================= */
+function Drawer({m,onClose,onSend}){
+  const [tone,setTone]=useState('Your default');
+  const [txt,setTxt]=useState(m.draft);
+  const pick=t=>{ setTone(t); setTxt(t==='Your default'?m.draft:(RETONE[t]?RETONE[t](m.draft):m.draft)); };
+  useEffect(()=>{const h=e=>e.key==='Escape'&&onClose();addEventListener('keydown',h);return()=>removeEventListener('keydown',h)},[]);
+  return (<>
+    <div className="scrim" onClick={onClose}/>
+    <div className="drawer">
+      <button className="dClose" onClick={onClose}>✕</button>
+      <div className="dFrom">
+        <div className="dAv" style={{background:av(m.from)}}>{ini(m.from)}</div>
+        <div>
+          <div style={{fontSize:14,fontWeight:500}}>{m.from}</div>
+          <div style={{fontSize:12,color:'var(--dim2)'}}>{m.org} · {m.time}</div>
+        </div>
+      </div>
+      <div className="dSub">{m.sub}</div>
+      <div className="dBody">{m.body}</div>
+
+      <div className="secT">Why it landed here</div>
+      <div className="reason" dangerouslySetInnerHTML={{__html:m.reason}}/>
+
+      <div className="secT">Your reply</div>
+      <div className="chips">{TONES.map(t=><button key={t} className={'chip'+(tone===t?' on':'')} onClick={()=>pick(t)}>{t}</button>)}</div>
+      <textarea className="dEdit" value={txt} onChange={e=>setTxt(e.target.value)}/>
+      <div className="dActs">
+        <button className="btn pri" onClick={()=>{onSend(txt,m.from);onClose();}}>Send reply</button>
+        <button className="btn" onClick={onClose}>Keep waiting</button>
+      </div>
+    </div>
+  </>);
+}
+
+
+/* ================= THE CALL ================= */
+function Call({onClose,onResolve}){
+  const [i,setI]=useState(0);
   const [said,setSaid]=useState([]);
-  const [rule,setRule]=useState(null);
-  const [rules,setRules]=useState([]);
-  const [showR,setShowR]=useState(false);
+  const [live,setLive]=useState(false);
+  useEffect(()=>{const t=setTimeout(()=>setLive(true),1400);return()=>clearTimeout(t)},[]);
+  const answer=(choice)=>{
+    const q=QS[i];
+    setSaid(s=>[...s,{q:q.q,you:choice,res:q.res}]);
+    onResolve(q.clears);
+    setTimeout(()=>setI(i+1),450);
+  };
+  const done = i>=QS.length;
+  return (<>
+    <div className="scrim" onClick={onClose}/>
+    <div className="callWrap">
+      <div className="callHd">
+        <div className="callRing"><span/><span/><span/></div>
+        <div>
+          <div className="callT">{live?(done?'All clear. Hanging up.':'Outbox is asking'):'Calling you…'}</div>
+          <div className="callS">{live?(done?'Three loops closed in 40 seconds.':'Question '+(i+1)+' of '+QS.length):'+1 (415) ···'}</div>
+        </div>
+        <button className="dClose" style={{position:'static',marginLeft:'auto'}} onClick={onClose}>✕</button>
+      </div>
+
+      <div className="callBody">
+        {said.map((t,k)=>(
+          <div key={k}>
+            <div className="bubA">{t.q}</div>
+            <div className="bubY">{t.you}</div>
+            <div className="bubR">✓ {t.res}</div>
+          </div>
+        ))}
+        {live && !done && (
+          <div className="bubA now">{QS[i].q}</div>
+        )}
+        {!live && <div className="bubA now">…</div>}
+      </div>
+
+      {live && !done && (
+        <div className="callActs">
+          {QS[i].a.map((c,k)=><button key={k} className={'btn '+(k===0?'pri':'')} onClick={()=>answer(c)}>{c}</button>)}
+        </div>
+      )}
+      {done && <div className="callActs"><button className="btn pri" onClick={onClose}>Back to the board</button></div>}
+      <div className="callFoot">You spoke for 40 seconds. It wrote four emails, moved a meeting, and held your price.</div>
+    </div>
+  </>);
+}
+
+/* ================= APP ================= */
+function App(){
+  const [open,setOpen]=useState(null);
   const [toast,setToast]=useState(null);
-  const [q,setQ]=useState({});
-  const say=m=>{setToast(m);setTimeout(()=>setToast(null),3000)};
+  const [booted,setBooted]=useState(false);
+  const [mail,setMail]=useState(MAIL);
+  const [think,setThink]=useState(null);
+  const [n,setN]=useState(0);
+  const [read,setRead]=useState(47);
+  const [calling,setCalling]=useState(false);
+  const resolve=(id)=>setMail(p=>p.filter(m=>m.id!==id));
 
-  const talk=()=>{
-    if(rec) return;
-    setTxt(''); setRec(true);
-    let i=0;
-    const t=setInterval(()=>{
-      i+=2; setTxt(SPEECH.slice(0,i));
-      if(i>=SPEECH.length){
-        clearInterval(t); setRec(false);
-        setTimeout(()=>setLoops(p=>[{id:99,col:'now',kind:'chase',who:'Oscar Bramley',
-          org:'CEO, Lantern Stay Group',working:true},...p]),600);
-        setTimeout(()=>setLoops(p=>p.map(x=>x.id===99?{...x,col:'them',working:false,
-          what:'Pitched with your scheduling link attached.',
-          next:'Attempt 1 of 4 · sent · next Wed 8am',
-          act:['Text him too','Stop'],
-          learn:'text as well as email when I have a mobile'}:x)),3600);
-      }
-    },24);
+  useEffect(()=>{ const t=setTimeout(()=>{ setBooted(true); document.getElementById('boot')?.classList.add('gone'); },3300); return ()=>clearTimeout(t); },[]);
+
+  const send=(txt,who)=>{ setToast('Sent to '+who.split(' ')[0]+' — thread muted until they reply'); setTimeout(()=>setToast(null),3400); };
+
+  const arrive=()=>{
+    if(think||n>=INCOMING.length) return;
+    const m=INCOMING[n];
+    setThink(m);
+    setTimeout(()=>{
+      setMail(p=>[m,...p]); setThink(null); setN(n+1); setRead(r=>r+1);
+      setToast('Sorted into '+(m.lane==='you'?'Needs you':'Reply ready')+' — '+m.why.toLowerCase());
+      setTimeout(()=>setToast(null),3600);
+    },2600);
   };
-
-  const answer=(c)=>{
-    const Q=QS[qi];
-    setSaid(s=>[...s,{q:Q.q,you:c,r:Q.r}]);
-    setLoops(p=>p.filter(x=>x.id!==Q.clears));
-    setTimeout(()=>setQi(qi+1),400);
-  };
-
-  const act=(m,label)=>{
-    if(m.href) window.open(m.href,'_blank');
-    if(label==='Stop'){setLoops(p=>p.filter(x=>x.id!==m.id));say('Stopped chasing.');return}
-    if(m.kind==='spam'){setLoops(p=>p.filter(x=>x.id!==m.id));say('Blocked.')}
-    else setLoops(p=>p.map(x=>x.id===m.id?{...x,col:'done',act:null,two:null,quick:null,next:null,gain:null,cost:null,tag:label}:x));
-    if(m.learn) setRule({label:m.learn});
-  };
-
-  const need = loops.filter(l=>l.col==='you').length;
-  const ivDone = qi>=QS.length;
 
   return (<>
-  <div className="wrap">
-    <div className="top">
-      <div>
-        <div className="mark">Lo<em>op</em></div>
-        <div className="sub">Not an inbox. Every open loop you have with a person.</div>
+    <Boot/>
+    <div className="wrap" style={{opacity:booted?1:0,transition:'opacity .6s .1s'}}>
+      <header className="top">
+        <div className="brand">
+          <div className="logo">Out<em>box</em></div>
+          <div className="tag">the email client with no inbox</div>
+        </div>
+        <div className="acct">
+          <button className="liveBtn callBtn" onClick={()=>setCalling(true)}>
+            <span className="dot"/> Call me and ask
+          </button>
+          <button className="liveBtn" onClick={arrive} disabled={!!think||n>=INCOMING.length}>
+            <span className="dot"/> {think?'Agent reading…':n>=INCOMING.length?'Inbox quiet':'Deliver a new email'}
+          </button>
+          <span className="pill">ilia@motel4.ai</span>
+          <div className="av">IP</div>
+        </div>
+      </header>
+
+      <div className="brief">
+        <div className="briefLine">
+          <b>41</b> done. <b>4</b> written. <span>Two need you.</span>
+        </div>
+        <div className="stats">
+          <div className="stat"><div className="statN">{read}</div><div className="statL">Read</div></div>
+          <div className="stat"><div className="statN" style={{color:'var(--ok)'}}>41</div><div className="statL">Handled</div></div>
+          <div className="stat"><div className="statN" style={{color:'var(--acc)'}}>3</div><div className="statL">Drafted</div></div>
+          <div className="stat"><div className="statN" style={{color:'var(--hot)'}}>2</div><div className="statL">Yours</div></div>
+          <div className="stat"><div className="statN">31<span style={{fontSize:14,color:'var(--dim2)'}}>m</span></div><div className="statL">Saved</div></div>
+        </div>
       </div>
-      <div className="btns">
-        <button className={'pb on'+(rec?' rec':'')} onClick={talk}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
-            <rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>
-          {rec?'Listening…':'Add a loop'}
-        </button>
-        <button className="pb" onClick={()=>setIv(!iv)}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <path d="M4.5 4.5h4l2 5-2.5 1.5a11 11 0 0 0 5 5L14.5 13.5l5 2v4a1 1 0 0 1-1 1A15.5 15.5 0 0 1 3.5 5.5a1 1 0 0 1 1-1z"/></svg>
-          Call me
-        </button>
-      </div>
-    </div>
 
-    <div className="hour"><span className="pulse"/> Last hour: read 47, handled 41, wrote 4, blocked 9. Nothing sent without you.</div>
-
-    {txt && <div className="said">“{txt}{rec&&<span className="cur"/>}”</div>}
-
-    {iv && (
-      <div className="iv">
-        <div className="ivHd" onClick={()=>setIv(false)}>
-          <span className="eqs"><i/><i/><i/></span>
-          <div>
-            <div className="ivT">{ivDone?'All clear. Hanging up.':'Outbox is asking'}</div>
-            <div className="ivS">{ivDone?'Three loops closed in forty seconds.':'Question '+(qi+1)+' of '+QS.length+' · only what it cannot decide alone'}</div>
+      {think && (
+        <div className="thinking">
+          <div className="thAv" style={{background:av(think.from)}}>{ini(think.from)}</div>
+          <div style={{flex:1,minWidth:0}}>
+            <div className="thTop"><b>{think.from}</b> · {think.org} · just now</div>
+            <div className="thSub">{think.sub}</div>
           </div>
-          <div className="ivGo"><button className="b g">Hang up</button></div>
+          <div className="thSteps">
+            <span style={{animationDelay:'.1s'}}>reading</span>
+            <span style={{animationDelay:'.7s'}}>checking calendar + CRM</span>
+            <span style={{animationDelay:'1.4s'}}>scoring against TELOS</span>
+            <span style={{animationDelay:'2.1s'}}>routing…</span>
+          </div>
         </div>
-        <div className="ivBody">
-          {said.map((s,k)=>(<div key={k} style={{display:"flex",flexDirection:"column"}}>
-            <div className="qa">{s.q}</div>
-            <div className="qy" style={{marginTop:7}}>{s.you}</div>
-            <div className="qr" style={{marginTop:6}}>✓ {s.r}</div>
-          </div>))}
-          {!ivDone && <>
-            <div className="qa now">{QS[qi].q}</div>
-            <div className="row" style={{maxWidth:340}}>
-              {QS[qi].a.map((c,k)=><button key={k} className={'b'+(k===0?' p':'')} onClick={()=>answer(c)}>{c}</button>)}
-            </div>
-          </>}
-        </div>
-      </div>
-    )}
+      )}
 
-    {rule && (
-      <div className="learn">
-        <div>
-          <div className="who">Always do that?</div>
-          <div className="what" style={{marginTop:3}}>I'll {rule.label}.</div>
-        </div>
-        <div className="row" style={{margin:'0 0 0 auto',flex:'none'}}>
-          <button className="b p" onClick={()=>{setRules(r=>[...r,rule.label]);setRule(null);say('Learned. It stops asking.')}}>Always</button>
-          <button className="b" onClick={()=>setRule(null)}>Just once</button>
-        </div>
-      </div>
-    )}
-
-    {rules.length>0 && (
-      <div className="rules" onClick={()=>setShowR(!showR)}>
-        It now handles {rules.length} thing{rules.length>1?'s':''} without asking. <span>{showR?'hide':'see them'}</span>
-      </div>
-    )}
-    {showR && <div className="rlist">{rules.map((r,k)=><div key={k}>· {r}</div>)}</div>}
-
-    <div className="cols">
-      {COLS.map(col=>{
-        const items=loops.filter(l=>l.col===col.k);
-        return (
-        <div className="col" key={col.k}>
-          <h2><i style={{background:col.c}}/>{col.t}<b>{items.length}</b></h2>
-          <div className="colS">{col.s}</div>
-          <div className="stack">
-            {items.map((m,i)=>(
-              <div className={'c'+(col.k==='done'?' gone':'')} key={m.id} style={{animationDelay:(i*.06)+'s'}}>
-                <div className="who">{m.who}</div>
-                <div className="org">{m.org}</div>
-                {m.working && <div className="work"><span className="bars"><i/><i/><i/></span> writing to him…</div>}
-                {m.what && <div className="what" dangerouslySetInnerHTML={{__html:m.what}}/>}
-                {m.gain && <div className="gc">
-                  {m.gain.map((g,k)=><div className="gr" key={'g'+k}><span className="gp">+</span>{g}</div>)}
-                  {m.cost.map((c,k)=><div className="gr" key={'c'+k}><span className="gm">−</span>{c}</div>)}
-                </div>}
-                {m.next && <div className="next">{m.next}</div>}
-                {m.tag && <div className="tag">✓ {m.tag}</div>}
-                {(m.two||m.act) && (
-                  <div className="row">
-                    {(m.two||m.act).map((l,k)=>(
-                      <button key={k} className={'b'+(k===0&&!m.act?' p':'')+(m.act&&k===0&&m.kind!=='spam'&&m.kind!=='native'?' p':'')+(l==='Stop'||l==='Never again'?' g':'')}
-                        onClick={()=>act(m,l)}>{l}</button>
-                    ))}
-                  </div>
-                )}
-                {m.quick && (
-                  <div className="qf">
-                    <input value={q[m.id]||''} onChange={e=>setQ({...q,[m.id]:e.target.value})}
-                      placeholder="or type the decision…"
-                      onKeyDown={e=>{if(e.key==='Enter'&&e.target.value.trim())act(m,'Replied')}}/>
-                    <button className="snd" onClick={()=>act(m,'Replied')}>
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round"><path d="M5 12h13M12 5l7 7-7 7"/></svg>
-                    </button>
-                  </div>
-                )}
+      <div className="board">
+        {LANES.map(l=>{
+          const items = mail.filter(m=>m.lane===l.id);
+          return (
+            <div className="lane" key={l.id}>
+              <div className="laneHd">
+                <div className="laneDot" style={{background:l.c}}/>
+                <div className="laneT">{l.t}</div>
+                <div className="laneC">{l.id==='done'?HANDLED.length:items.length}</div>
               </div>
-            ))}
-          </div>
-        </div>);
-      })}
+              <div className="laneSub">{l.sub}</div>
+              {l.id==='wait' && (
+                <div className="compose">
+                  <div className="composeL">＋ new follow-up</div>
+                  <input placeholder="oscar@lanternstay.com — pitch AI GTM, chase 4x"
+                    onKeyDown={e=>{if(e.key==='Enter'&&e.target.value.trim()){setToast('Follow-up armed — 4 attempts, new angle each time, then it stops and tells you');setTimeout(()=>setToast(null),4200);e.target.value=''}}}/>
+                  <div className="composeH">Address plus goal. It handles the rest.</div>
+                </div>
+              )}
+              {l.id==='done'
+                ? HANDLED.map((h,i)=>(
+                    <div className="logRow" key={i} style={{animationDelay:(i*.045)+'s'}}>
+                      <div className="logIco" style={{background:h.k==='mute'?'rgba(139,147,165,.12)':h.k==='sent'?'rgba(124,140,255,.15)':'rgba(63,214,140,.13)'}}>
+                        {h.k==='mute'?'⌀':h.k==='sent'?'↗':'✓'}
+                      </div>
+                      <div className="logTx" dangerouslySetInnerHTML={{__html:h.t}}/>
+                      <div className="logAct">{h.a}</div>
+                    </div>))
+                : items.map((m,i)=><Card key={m.id} m={m} i={i} onOpen={setOpen} onSend={send}/>)}
+            </div>);
+        })}
+      </div>
+
+      <div className="pitch">
+        <h3>Every email app still makes you read.<br/>This one just asks you to decide.</h3>
+      </div>
     </div>
 
-    <div className="foot">It holds your loops.</div>
-  </div>
-  <div className={'toast'+(toast?' up':'')}>{toast||''}</div>
+    {calling && <Call onClose={()=>setCalling(false)} onResolve={resolve}/>}
+    {open && <Drawer m={open} onClose={()=>setOpen(null)} onSend={send}/>}
+    <div className={'toast'+(toast?' up':'')}>
+      <span style={{color:'var(--ok)'}}>✓</span> {toast||''}
+    </div>
   </>);
 }
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
+
 </body>
 </html>

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Loop — it holds your loops</title>
+<meta name="description" content="Not an inbox. Every open loop you have with another person, in one place." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F7F6FB; --card:#FFF;
+  --line:#EDEAF6; --line2:#DFDAEE;
+  --txt:#17141F; --dim:#6B6584; --dim2:#A29CB4;
+  --acc:#6D5CE7; --acc2:#C86DD7; --ok:#11B981; --hot:#F0567A; --sky:#3EA8F5; --warm:#F0A020;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,-apple-system,system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;filter:blur(8px);
+  background:
+    radial-gradient(760px 520px at 4% -12%, rgba(200,109,215,.28), transparent 62%),
+    radial-gradient(700px 480px at 40% -16%, rgba(109,92,231,.22), transparent 62%),
+    radial-gradient(820px 540px at 98% 0%, rgba(62,168,245,.24), transparent 62%),
+    radial-gradient(720px 620px at 70% 112%, rgba(255,183,143,.22), transparent 62%);}
+#root{position:relative;z-index:1}
+
+.wrap{max-width:1420px;margin:0 auto;padding:34px 28px 90px}
+
+/* zone 1 */
+.top{display:flex;align-items:flex-start;gap:18px;margin-bottom:12px}
+.mark{font-family:'Instrument Serif',serif;font-size:28px;letter-spacing:-.01em;line-height:1}
+.mark em{font-style:italic;background:linear-gradient(100deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{font-size:12.5px;color:var(--dim2);margin-top:5px}
+.btns{margin-left:auto;display:flex;gap:9px}
+.pb{display:inline-flex;align-items:center;gap:9px;border:1px solid var(--line2);cursor:pointer;background:#fff;color:var(--txt);
+  font-family:inherit;font-size:13.5px;font-weight:500;padding:11px 18px;border-radius:999px;transition:.18s}
+.pb:hover{border-color:#CFC7E8;transform:translateY(-1px)}
+.pb.on{background:linear-gradient(100deg,var(--acc),var(--acc2));color:#fff;border-color:transparent;box-shadow:0 8px 24px rgba(109,92,231,.3)}
+.pb.rec{animation:br 1.4s ease-in-out infinite}
+@keyframes br{50%{box-shadow:0 8px 24px rgba(109,92,231,.3),0 0 0 14px rgba(109,92,231,.08)}}
+.pulse{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(17,185,129,.16);animation:pl 2.2s infinite}
+@keyframes pl{50%{opacity:.4}}
+.hour{font-size:12.5px;color:var(--dim);display:flex;align-items:center;gap:9px;padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:20px}
+
+/* voice transcript */
+.said{background:#fff;border:1px solid var(--line);border-radius:18px;padding:17px 19px;font-size:16px;line-height:1.6;
+  box-shadow:0 8px 30px rgba(88,70,150,.08);margin-bottom:16px;animation:up .4s cubic-bezier(.22,1,.36,1) both}
+.cur{display:inline-block;width:2px;height:17px;background:var(--acc);vertical-align:-3px;animation:bl .8s steps(2) infinite}
+@keyframes bl{50%{opacity:0}}
+@keyframes up{from{opacity:0;transform:translateY(12px)}}
+
+/* zone 2 interview */
+.iv{border-radius:20px;margin-bottom:18px;overflow:hidden;animation:up .4s cubic-bezier(.22,1,.36,1) both;
+  background:linear-gradient(100deg,rgba(109,92,231,.1),rgba(200,109,215,.07));border:1px solid rgba(109,92,231,.26)}
+.ivHd{display:flex;align-items:center;gap:13px;padding:16px 20px;cursor:pointer}
+.eqs{display:flex;gap:3px;align-items:flex-end;height:20px;width:20px;justify-content:center;flex:none}
+.eqs i{width:3px;background:linear-gradient(180deg,var(--acc),var(--acc2));border-radius:2px;animation:eq 1s ease-in-out infinite}
+.eqs i:nth-child(1){height:8px}.eqs i:nth-child(2){height:17px;animation-delay:.16s}.eqs i:nth-child(3){height:11px;animation-delay:.32s}
+@keyframes eq{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+.ivT{font-size:14.5px;font-weight:600}
+.ivS{font-size:12.5px;color:var(--dim);margin-top:2px}
+.ivGo{margin-left:auto}
+.ivBody{padding:0 20px 18px;display:flex;flex-direction:column;gap:9px}
+.qa{background:#fff;border:1px solid var(--line);border-radius:16px 16px 16px 5px;padding:13px 16px;font-size:14.5px;line-height:1.5;max-width:88%;animation:up .35s both}
+.qa.now{border-color:var(--acc);box-shadow:0 0 0 3px rgba(109,92,231,.1)}
+.qy{align-self:flex-end;background:linear-gradient(100deg,var(--acc),var(--acc2));color:#fff;border-radius:16px 16px 5px 16px;
+  padding:9px 16px;font-size:14px;font-weight:500;animation:up .3s both}
+.qr{font-size:12.5px;color:var(--ok);padding:0 4px 6px;animation:up .35s both}
+
+/* zone 4 learn */
+.learn{background:linear-gradient(100deg,rgba(17,185,129,.1),rgba(109,92,231,.05));border:1px solid rgba(17,185,129,.28);
+  border-radius:18px;padding:15px 19px;margin-bottom:16px;display:flex;align-items:center;gap:15px;animation:up .4s both}
+.rules{font-size:12.5px;color:var(--ok);margin-bottom:16px;cursor:pointer}
+.rules span{color:var(--dim2)}
+.rlist{font-size:12.5px;color:var(--dim);margin:-8px 0 18px;line-height:1.9;padding-left:2px}
+
+/* zone 3 board */
+.cols{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start}
+@media(max-width:1180px){.cols{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.cols{grid-template-columns:1fr}}
+.col h2{font-size:12.5px;font-weight:600;margin-bottom:3px;display:flex;align-items:center;gap:8px}
+.col h2 i{width:7px;height:7px;border-radius:2px;flex:none}
+.col h2 b{margin-left:auto;font-weight:400;font-size:11.5px;color:var(--dim2)}
+.colS{font-size:11.5px;color:var(--dim2);margin-bottom:13px}
+.stack{display:flex;flex-direction:column;gap:11px}
+
+.c{background:#fff;border:1px solid var(--line);border-radius:18px;padding:15px 16px;
+  box-shadow:0 4px 18px rgba(88,70,150,.06);animation:up .45s cubic-bezier(.22,1,.36,1) both;transition:box-shadow .2s,transform .2s}
+.c:hover{box-shadow:0 12px 32px rgba(88,70,150,.12);transform:translateY(-2px)}
+.who{font-size:14.5px;font-weight:500;line-height:1.3}
+.org{font-size:11.5px;color:var(--dim2);margin-top:2px}
+.what{font-size:12.5px;color:var(--dim);margin-top:7px;line-height:1.55}
+.what b{color:var(--txt);font-weight:500}
+.next{font-size:11.5px;color:var(--acc);margin-top:8px}
+.tag{font-size:12px;color:var(--ok);margin-top:8px}
+.gone{opacity:.52}
+.gone .who{color:var(--dim)}
+
+.gc{background:#F8F7FC;border:1px solid var(--line);border-radius:11px;padding:9px 11px;margin-top:9px}
+.gr{display:flex;gap:8px;font-size:11.5px;line-height:1.5;color:var(--dim);padding:1px 0}
+.gp{color:var(--ok);font-weight:700;width:8px;flex:none}
+.gm{color:var(--warm);font-weight:700;width:8px;flex:none}
+
+.row{display:flex;gap:7px;margin-top:11px}
+.b{flex:1;border:1px solid var(--line2);background:#fff;color:var(--txt);border-radius:11px;padding:9px 11px;
+  font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit;transition:.16s;white-space:nowrap}
+.b:hover{background:#FAF9FE;border-color:#CFC7E8}
+.b.p{background:linear-gradient(100deg,var(--acc),var(--acc2));color:#fff;border-color:transparent}
+.b.p:hover{filter:brightness(1.08)}
+.b.g{color:var(--dim2);flex:none;padding:9px 12px}
+
+.qf{display:flex;gap:7px;margin-top:9px}
+.qf input{flex:1;background:#FBFAFE;border:1px solid var(--line);border-radius:11px;padding:9px 11px;font-size:12.5px;
+  color:var(--txt);font-family:inherit;outline:none;transition:.16s;min-width:0}
+.qf input:focus{border-color:var(--acc);background:#fff;box-shadow:0 0 0 3px rgba(109,92,231,.1)}
+.qf input::placeholder{color:var(--dim2)}
+.snd{width:34px;height:34px;flex:none;border-radius:11px;border:0;background:linear-gradient(100deg,var(--acc),var(--acc2));
+  display:grid;place-items:center;cursor:pointer;transition:.16s}
+.snd:hover{filter:brightness(1.1)}
+
+.work{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--acc);margin-top:8px}
+.bars{display:flex;gap:2.5px;align-items:flex-end;height:11px}
+.bars i{width:2.5px;background:var(--acc);border-radius:2px;animation:eq .9s ease-in-out infinite}
+.bars i:nth-child(1){height:5px}.bars i:nth-child(2){height:10px;animation-delay:.15s}.bars i:nth-child(3){height:7px;animation-delay:.3s}
+
+.foot{margin-top:76px;text-align:center;font-family:'Instrument Serif',serif;font-size:26px;color:var(--dim2)}
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(90px);background:#fff;border:1px solid var(--line2);
+  border-radius:13px;padding:13px 19px;font-size:13.5px;z-index:90;box-shadow:0 16px 44px rgba(88,70,150,.2);transition:transform .34s cubic-bezier(.22,1,.36,1)}
+.toast.up{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel">
+const {useState} = React;
+
+const SPEECH = "Here's Oscar's email, I can do freelance GTM for him, chase him until he answers.";
+
+const COLS = [
+  {k:'them', t:'Waiting on them', c:'#3EA8F5', s:'It chases. You do nothing.'},
+  {k:'you',  t:'Waiting on you',  c:'#F0567A', s:'It will not guess.'},
+  {k:'now',  t:'Doing now',       c:'#6D5CE7', s:'Working while you read this.'},
+  {k:'done', t:'Closed today',    c:'#11B981', s:'Gone by morning.'},
+];
+
+const SEED = [
+  {id:1,col:'them',kind:'chase',who:'Nadia Fontaine',org:'CEO, Meridian Hotels',
+   what:'Opened <b>3 times</b>, never replied.',next:'Attempt 2 of 4 · Tue 9am · new angle from their Glassdoor reviews',
+   act:['Send it now','Stop'],learn:'chase every pitch four times before giving up'},
+  {id:2,col:'them',kind:'chase',who:'Twilio Support',org:'Ticket #88214',
+   what:'Tier 2 escalation. <b>SLA expires 4pm tomorrow.</b>',next:'Chases automatically at 4pm',
+   act:['Chase now','Stop'],learn:'always hold vendors to their own SLA'},
+
+  {id:3,col:'you',kind:'decision',who:'Priya Raghavan',org:'Sequoia Capital',
+   what:'<b>Tue 2pm</b> or <b>Thu 10am</b>. Thursday hits your pilot call.',
+   two:['Tuesday','Thursday'],learn:'always protect the pilot calls'},
+  {id:4,col:'you',kind:'decision',who:'Marcus Bell',org:'Sunset Inn, 32 rooms',
+   what:'Wants <b>$180</b>, not $299. Third pilot to ask.',
+   two:['Hold $299','Take $180'],quick:true,learn:'never discount below $299 without asking me'},
+  {id:5,col:'you',kind:'event',who:'Agentic Infra Night',org:'Invite · Thu 6–9pm · SoMa',
+   gain:['4 hotel-tech founders on the guest list','2 Twilio voice engineers, your open ticket'],
+   cost:['Your only free evening this week'],
+   two:['Add to calendar','Decline'],learn:'accept invites where three or more leads will be'},
+
+  {id:6,col:'done',kind:'native',who:'Lunch with Dana',org:'Blue Bottle, 66 Mint St',
+   tag:'On your calendar',act:['Open in Maps'],
+   href:'https://maps.apple.com/?q=Blue%20Bottle%2066%20Mint%20St%20San%20Francisco',
+   learn:'open any address in Maps without asking'},
+  {id:7,col:'done',kind:'decision',who:'Dana Whitfield',org:'Harborview Suites',
+   what:'Asked about Spanish. Answered from your changelog.',tag:'Replied 6:12am'},
+  {id:8,col:'done',kind:'spam',who:'Nine SEO pitches',org:'Same template, nine senders',
+   tag:'Blocked',act:['Never again'],learn:'block cold SEO pitches on sight'},
+];
+
+const QS = [
+  {q:'Priya wants Tuesday 2pm or Thursday 10am. Thursday hits your pilot call.',a:['Tuesday','Thursday'],
+   r:'Tuesday confirmed. Pilot call untouched.',clears:3},
+  {q:'Sunset Inn wants $180, not $299. Third pilot to ask.',a:['Hold $299','Take $180'],
+   r:'Holding $299. Added after-hours routing as the sweetener.',clears:4},
+  {q:'Agentic Infra Night, Thursday. Four hotel founders will be there.',a:['Add it','Skip it'],
+   r:'On your calendar. Two overlapping invites declined.',clears:5},
+];
+
+function App(){
+  const [loops,setLoops]=useState(SEED);
+  const [rec,setRec]=useState(false);
+  const [txt,setTxt]=useState('');
+  const [iv,setIv]=useState(false);
+  const [qi,setQi]=useState(0);
+  const [said,setSaid]=useState([]);
+  const [rule,setRule]=useState(null);
+  const [rules,setRules]=useState([]);
+  const [showR,setShowR]=useState(false);
+  const [toast,setToast]=useState(null);
+  const [q,setQ]=useState({});
+  const say=m=>{setToast(m);setTimeout(()=>setToast(null),3000)};
+
+  const talk=()=>{
+    if(rec) return;
+    setTxt(''); setRec(true);
+    let i=0;
+    const t=setInterval(()=>{
+      i+=2; setTxt(SPEECH.slice(0,i));
+      if(i>=SPEECH.length){
+        clearInterval(t); setRec(false);
+        setTimeout(()=>setLoops(p=>[{id:99,col:'now',kind:'chase',who:'Oscar Bramley',
+          org:'CEO, Lantern Stay Group',working:true},...p]),600);
+        setTimeout(()=>setLoops(p=>p.map(x=>x.id===99?{...x,col:'them',working:false,
+          what:'Pitched with your scheduling link attached.',
+          next:'Attempt 1 of 4 · sent · next Wed 8am',
+          act:['Text him too','Stop'],
+          learn:'text as well as email when I have a mobile'}:x)),3600);
+      }
+    },24);
+  };
+
+  const answer=(c)=>{
+    const Q=QS[qi];
+    setSaid(s=>[...s,{q:Q.q,you:c,r:Q.r}]);
+    setLoops(p=>p.filter(x=>x.id!==Q.clears));
+    setTimeout(()=>setQi(qi+1),400);
+  };
+
+  const act=(m,label)=>{
+    if(m.href) window.open(m.href,'_blank');
+    if(label==='Stop'){setLoops(p=>p.filter(x=>x.id!==m.id));say('Stopped chasing.');return}
+    if(m.kind==='spam'){setLoops(p=>p.filter(x=>x.id!==m.id));say('Blocked.')}
+    else setLoops(p=>p.map(x=>x.id===m.id?{...x,col:'done',act:null,two:null,quick:null,next:null,gain:null,cost:null,tag:label}:x));
+    if(m.learn) setRule({label:m.learn});
+  };
+
+  const need = loops.filter(l=>l.col==='you').length;
+  const ivDone = qi>=QS.length;
+
+  return (<>
+  <div className="wrap">
+    <div className="top">
+      <div>
+        <div className="mark">Lo<em>op</em></div>
+        <div className="sub">Not an inbox. Every open loop you have with a person.</div>
+      </div>
+      <div className="btns">
+        <button className={'pb on'+(rec?' rec':'')} onClick={talk}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
+            <rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>
+          {rec?'Listening…':'Add a loop'}
+        </button>
+        <button className="pb" onClick={()=>setIv(!iv)}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <path d="M4.5 4.5h4l2 5-2.5 1.5a11 11 0 0 0 5 5L14.5 13.5l5 2v4a1 1 0 0 1-1 1A15.5 15.5 0 0 1 3.5 5.5a1 1 0 0 1 1-1z"/></svg>
+          Call me
+        </button>
+      </div>
+    </div>
+
+    <div className="hour"><span className="pulse"/> Last hour: read 47, handled 41, wrote 4, blocked 9. Nothing sent without you.</div>
+
+    {txt && <div className="said">“{txt}{rec&&<span className="cur"/>}”</div>}
+
+    {iv && (
+      <div className="iv">
+        <div className="ivHd" onClick={()=>setIv(false)}>
+          <span className="eqs"><i/><i/><i/></span>
+          <div>
+            <div className="ivT">{ivDone?'All clear. Hanging up.':'Outbox is asking'}</div>
+            <div className="ivS">{ivDone?'Three loops closed in forty seconds.':'Question '+(qi+1)+' of '+QS.length+' · only what it cannot decide alone'}</div>
+          </div>
+          <div className="ivGo"><button className="b g">Hang up</button></div>
+        </div>
+        <div className="ivBody">
+          {said.map((s,k)=>(<div key={k} style={{display:"flex",flexDirection:"column"}}>
+            <div className="qa">{s.q}</div>
+            <div className="qy" style={{marginTop:7}}>{s.you}</div>
+            <div className="qr" style={{marginTop:6}}>✓ {s.r}</div>
+          </div>))}
+          {!ivDone && <>
+            <div className="qa now">{QS[qi].q}</div>
+            <div className="row" style={{maxWidth:340}}>
+              {QS[qi].a.map((c,k)=><button key={k} className={'b'+(k===0?' p':'')} onClick={()=>answer(c)}>{c}</button>)}
+            </div>
+          </>}
+        </div>
+      </div>
+    )}
+
+    {rule && (
+      <div className="learn">
+        <div>
+          <div className="who">Always do that?</div>
+          <div className="what" style={{marginTop:3}}>I'll {rule.label}.</div>
+        </div>
+        <div className="row" style={{margin:'0 0 0 auto',flex:'none'}}>
+          <button className="b p" onClick={()=>{setRules(r=>[...r,rule.label]);setRule(null);say('Learned. It stops asking.')}}>Always</button>
+          <button className="b" onClick={()=>setRule(null)}>Just once</button>
+        </div>
+      </div>
+    )}
+
+    {rules.length>0 && (
+      <div className="rules" onClick={()=>setShowR(!showR)}>
+        It now handles {rules.length} thing{rules.length>1?'s':''} without asking. <span>{showR?'hide':'see them'}</span>
+      </div>
+    )}
+    {showR && <div className="rlist">{rules.map((r,k)=><div key={k}>· {r}</div>)}</div>}
+
+    <div className="cols">
+      {COLS.map(col=>{
+        const items=loops.filter(l=>l.col===col.k);
+        return (
+        <div className="col" key={col.k}>
+          <h2><i style={{background:col.c}}/>{col.t}<b>{items.length}</b></h2>
+          <div className="colS">{col.s}</div>
+          <div className="stack">
+            {items.map((m,i)=>(
+              <div className={'c'+(col.k==='done'?' gone':'')} key={m.id} style={{animationDelay:(i*.06)+'s'}}>
+                <div className="who">{m.who}</div>
+                <div className="org">{m.org}</div>
+                {m.working && <div className="work"><span className="bars"><i/><i/><i/></span> writing to him…</div>}
+                {m.what && <div className="what" dangerouslySetInnerHTML={{__html:m.what}}/>}
+                {m.gain && <div className="gc">
+                  {m.gain.map((g,k)=><div className="gr" key={'g'+k}><span className="gp">+</span>{g}</div>)}
+                  {m.cost.map((c,k)=><div className="gr" key={'c'+k}><span className="gm">−</span>{c}</div>)}
+                </div>}
+                {m.next && <div className="next">{m.next}</div>}
+                {m.tag && <div className="tag">✓ {m.tag}</div>}
+                {(m.two||m.act) && (
+                  <div className="row">
+                    {(m.two||m.act).map((l,k)=>(
+                      <button key={k} className={'b'+(k===0&&!m.act?' p':'')+(m.act&&k===0&&m.kind!=='spam'&&m.kind!=='native'?' p':'')+(l==='Stop'||l==='Never again'?' g':'')}
+                        onClick={()=>act(m,l)}>{l}</button>
+                    ))}
+                  </div>
+                )}
+                {m.quick && (
+                  <div className="qf">
+                    <input value={q[m.id]||''} onChange={e=>setQ({...q,[m.id]:e.target.value})}
+                      placeholder="or type the decision…"
+                      onKeyDown={e=>{if(e.key==='Enter'&&e.target.value.trim())act(m,'Replied')}}/>
+                    <button className="snd" onClick={()=>act(m,'Replied')}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round"><path d="M5 12h13M12 5l7 7-7 7"/></svg>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>);
+      })}
+    </div>
+
+    <div className="foot">It holds your loops.</div>
+  </div>
+  <div className={'toast'+(toast?' up':'')}>{toast||''}</div>
+  </>);
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
