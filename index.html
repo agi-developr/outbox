@@ -166,6 +166,20 @@ textarea.dEdit:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(124,140,2
 .pitch em{color:var(--txt);font-style:normal}
 .kicker{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--acc);font-weight:600;margin-bottom:9px}
 
+/* live delivery */
+.liveBtn{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line2);border-radius:999px;padding:8px 15px;font-size:12px;color:var(--txt);cursor:pointer;font-family:inherit;font-weight:500;transition:.18s}
+.liveBtn:hover:not(:disabled){border-color:var(--acc);background:var(--card2)}
+.liveBtn:disabled{opacity:.55;cursor:default}
+.thinking{display:flex;align-items:center;gap:14px;background:linear-gradient(100deg,rgba(124,140,255,.09),rgba(167,139,250,.05));border:1px solid rgba(124,140,255,.3);border-radius:16px;padding:14px 18px;margin-bottom:16px;
+  opacity:0;transform:translateY(-8px);animation:in .4s cubic-bezier(.22,1,.36,1) forwards;position:relative;overflow:hidden}
+.thinking::after{content:'';position:absolute;left:0;bottom:0;height:2px;width:0;background:linear-gradient(90deg,var(--acc),var(--acc2));animation:bb 2.6s cubic-bezier(.4,0,.2,1) forwards}
+.thAv{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:12px;font-weight:600;color:#0a0b0d;flex:none}
+.thTop{font-size:11px;color:var(--dim2)}
+.thTop b{color:var(--txt);font-weight:500}
+.thSub{font-size:14px;font-weight:500;margin-top:2px}
+.thSteps{display:flex;gap:9px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--dim2);flex-wrap:wrap;justify-content:flex-end}
+.thSteps span{opacity:0;animation:bl .4s forwards;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:6px;padding:4px 9px}
+.thSteps span:last-child{color:var(--acc);border-color:rgba(124,140,255,.4)}
 .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--card2);border:1px solid var(--line2);border-radius:12px;padding:12px 18px;font-size:12.5px;z-index:90;display:flex;align-items:center;gap:9px;box-shadow:0 16px 50px rgba(0,0,0,.6);transition:transform .34s cubic-bezier(.22,1,.36,1)}
 .toast.up{transform:translateX(-50%) translateY(0)}
 </style>
@@ -263,6 +277,24 @@ const HANDLED = [
   {t:'<b>Apple</b> — receipt, $2.99', a:'filed', k:'ok'},
   {t:'<b>Calendly</b> — Thu 3pm confirmed', a:'on calendar', k:'ok'},
   {t:'<b>2 newsletters</b> — nothing you follow', a:'unsubbed', k:'mute'},
+];
+
+/* live-arrival demo: a new mail lands and the agent sorts it on stage */
+const INCOMING = [
+  { id:101, lane:'ready', from:'Grace Nakamura', org:'Bayside Lodge', time:'just now',
+    sub:'Do you integrate with Cloudbeds?',
+    sum:'Pre-sale integration question. <b>Cloudbeds shipped Aug 6</b> — pulled from your own integrations page.',
+    why:'Answer already exists in your docs.',
+    body:`Hi — we run Cloudbeds for our PMS. Does your receptionist push bookings into it directly?`,
+    reason:'Checked your integrations page rather than guessing. Cloudbeds went live <b>Aug 6</b> with two-way booking sync, so this is a citable fact, not a promise.',
+    draft:'Yes — two-way sync with Cloudbeds since Aug 6, bookings land directly in your PMS. Want me to run a test booking on your account?'},
+  { id:102, lane:'you', from:'Devin Alvarez', org:'Alvarez Hospitality Group', time:'just now',
+    sub:'Exclusive for 11 properties — 12 months',
+    sum:'Wants an <b>exclusivity clause</b> across 11 properties in exchange for a 12-month prepay. That locks out the rest of the region.',
+    why:'Exclusivity is a strategy call. No draft written.',
+    body:`Ilia — we'd prepay 12 months across all 11 properties if you give us regional exclusivity for the year.`,
+    reason:'Prepay is attractive, but exclusivity <b>removes every other hotel in the region</b> from your pipeline for a year. That trade is yours to make, so I wrote nothing.',
+    draft:'Prepay is interesting. Exclusivity I need to think about — can we do volume pricing without the regional lock?'},
 ];
 
 const TONES = ['Your default','Warmer','Shorter','Firmer','More formal'];
@@ -397,10 +429,25 @@ function App(){
   const [open,setOpen]=useState(null);
   const [toast,setToast]=useState(null);
   const [booted,setBooted]=useState(false);
+  const [mail,setMail]=useState(MAIL);
+  const [think,setThink]=useState(null);
+  const [n,setN]=useState(0);
+  const [read,setRead]=useState(47);
 
   useEffect(()=>{ const t=setTimeout(()=>{ setBooted(true); document.getElementById('boot')?.classList.add('gone'); },3300); return ()=>clearTimeout(t); },[]);
 
   const send=(txt,who)=>{ setToast('Sent to '+who.split(' ')[0]+' — thread muted until they reply'); setTimeout(()=>setToast(null),3400); };
+
+  const arrive=()=>{
+    if(think||n>=INCOMING.length) return;
+    const m=INCOMING[n];
+    setThink(m);
+    setTimeout(()=>{
+      setMail(p=>[m,...p]); setThink(null); setN(n+1); setRead(r=>r+1);
+      setToast('Sorted into '+(m.lane==='you'?'Needs you':'Reply ready')+' — '+m.why.toLowerCase());
+      setTimeout(()=>setToast(null),3600);
+    },2600);
+  };
 
   return (<>
     <Boot/>
@@ -411,7 +458,9 @@ function App(){
           <div className="tag">the email client with no inbox</div>
         </div>
         <div className="acct">
-          <span className="pill"><span className="dot"/> agent active · last sweep 2m ago</span>
+          <button className="liveBtn" onClick={arrive} disabled={!!think||n>=INCOMING.length}>
+            <span className="dot"/> {think?'Agent reading…':n>=INCOMING.length?'Inbox quiet':'Deliver a new email'}
+          </button>
           <span className="pill">ilia@motel4.ai</span>
           <div className="av">IP</div>
         </div>
@@ -423,7 +472,7 @@ function App(){
           <span>Forty-one are done. Four have replies waiting. Two are yours.</span>
         </div>
         <div className="stats">
-          <div className="stat"><div className="statN">47</div><div className="statL">Read</div></div>
+          <div className="stat"><div className="statN">{read}</div><div className="statL">Read</div></div>
           <div className="stat"><div className="statN" style={{color:'var(--ok)'}}>41</div><div className="statL">Handled</div></div>
           <div className="stat"><div className="statN" style={{color:'var(--acc)'}}>3</div><div className="statL">Drafted</div></div>
           <div className="stat"><div className="statN" style={{color:'var(--hot)'}}>2</div><div className="statL">Yours</div></div>
@@ -431,9 +480,25 @@ function App(){
         </div>
       </div>
 
+      {think && (
+        <div className="thinking">
+          <div className="thAv" style={{background:av(think.from)}}>{ini(think.from)}</div>
+          <div style={{flex:1,minWidth:0}}>
+            <div className="thTop"><b>{think.from}</b> · {think.org} · just now</div>
+            <div className="thSub">{think.sub}</div>
+          </div>
+          <div className="thSteps">
+            <span style={{animationDelay:'.1s'}}>reading</span>
+            <span style={{animationDelay:'.7s'}}>checking calendar + CRM</span>
+            <span style={{animationDelay:'1.4s'}}>scoring against TELOS</span>
+            <span style={{animationDelay:'2.1s'}}>routing…</span>
+          </div>
+        </div>
+      )}
+
       <div className="board">
         {LANES.map(l=>{
-          const items = MAIL.filter(m=>m.lane===l.id);
+          const items = mail.filter(m=>m.lane===l.id);
           return (
             <div className="lane" key={l.id}>
               <div className="laneHd">
